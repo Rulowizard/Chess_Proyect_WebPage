@@ -19,13 +19,19 @@ def index():
 
     # Return template and data
     print("Home")
-    return render_template("index.html")
+
+    number_of_games = len( list(db.games.find()))
+    print(number_of_games)
+
+    return render_template("index.html", numb_games= number_of_games)
 
 @app.route("/load")
 def load():
 
     print("Load")
-    return render_template("load_page.html")
+
+    saved_games = list(db.games.find())
+    return render_template("load_page.html", saved_games=saved_games)
 
 
 

@@ -28,10 +28,26 @@
                 <li> <a href="/">Home</a> </li>
                 <li class="active" > <a href="/load">Load Game</a> </li>
             </ul>
-
-
         </div>
     </nav>
+
+    <div class="container-fluid" >
+
+        <div class="container text-left">
+            <h1 class="jumbotron" >Saved Games</h1>
+            <div>
+                {% for name in saved_games%}
+                    <div>
+                        <div> <p> <b>Nombre de la partida:</b> {{name.save_name}} </p> </div>
+                        <div> <p> <b>Turnos:</b> {{name.game_length}}</p> </div>
+                    </div>
+                {%endfor%}
+
+            </div>
+        </div>
+    </div>
+
+    <p>Load Page</p>
 
 
 
