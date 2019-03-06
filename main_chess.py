@@ -1,5 +1,8 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, Markup
 import pymongo
+
+from chess_engine import play_game, jugador_v0, jugador_v5, boardSVGRepr
+
 
 # Create an instance of Flask
 app = Flask(__name__)
@@ -32,6 +35,15 @@ def load():
 
     saved_games = list(db.games.find())
     return render_template("load_page.html", saved_games=saved_games)
+
+@app.route("/svg_test")
+def test():
+    juego = play_game(jugador_v5,jugador_v0,depth=0,visual=None)
+    
+    
+
+    return render_template("test_svg.html", svg= Markup( boardSVGRepr(juego[2])) )
+    
 
 
 
