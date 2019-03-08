@@ -1,11 +1,11 @@
-from flask import Flask, render_template, redirect, Markup
-import pymongo
+from flask import Flask, render_template, redirect, Markup, request , Response
+import pymongo, json
 
 from chess_engine import play_game, jugador_v0, jugador_v5, boardSVGRepr
 
 
 # Create an instance of Flask
-app = Flask(__name__)
+app = Flask(__name__)  
 
 #Setup mongo connection
 conn = "mongodb://localhost:27017"
@@ -38,11 +38,18 @@ def load():
 
 @app.route("/svg_test")
 def test():
-    juego = play_game(jugador_v5,jugador_v0,depth=0,visual=None)
+    #juego = play_game(jugador_v5,jugador_v0,depth=0,visual=None)
     
-    
+     
+    #return render_template("test_svg.html", svg= Markup( boardSVGRepr(juego[2])) )
+    return render_template("test_svg.html" )
 
-    return render_template("test_svg.html", svg= Markup( boardSVGRepr(juego[2])) )
+@app.route("/game", methods=["GET"])
+def game():
+      
+    print("game")  
+    return Markup(boardSVGRepr()) 
+    #return 200,"Test"
     
 
 

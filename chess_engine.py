@@ -791,7 +791,11 @@ def jugador_v1(board, color ,depth):
     return moves[0].uci()
 
 
-def boardSVGRepr(board):
+#El metodo original deberia de recibir un tablero
+def boardSVGRepr():
+    #La siguiente linea solo es para hacer pruebas
+    board = chess.Board()
+
     return board._repr_svg_()
 
 
@@ -825,7 +829,7 @@ def play_game(player1, player2, visual="svg", pause=0.5, depth=0):
                 uci = player2(board,board.turn,depth)
             name = who(board.turn)
             board.push_uci(uci)
-            board_stop = boardSVGRepr(board)
+            board_stop = boardSVGRepr()
             html = "<b>Mueve %s %s, Play '%s', Mapa:</b><br/>%s" % (
                        len(board.move_stack), name, uci, board_stop)
             time.sleep(pause)
