@@ -1,7 +1,8 @@
-from flask import Flask, render_template, redirect, Markup, request , Response
+from flask import Flask, render_template, redirect, Markup, request , Response, jsonify
 import pymongo, json
 
-from chess_engine import play_game, jugador_v0, jugador_v5, boardSVGRepr
+from chess_engine import (jugador_v0, jugador_v5, boardSVGRepr, initialize_game, 
+    call_jugador_v4, global_board)
 
 
 # Create an instance of Flask
@@ -38,19 +39,26 @@ def load():
 
 @app.route("/svg_test")
 def test():
-    #juego = play_game(jugador_v5,jugador_v0,depth=0,visual=None)
-    
-     
-    #return render_template("test_svg.html", svg= Markup( boardSVGRepr(juego[2])) )
     return render_template("test_svg.html" )
 
 @app.route("/game", methods=["GET"])
 def game():
       
     print("game")  
-    return Markup(boardSVGRepr()) 
-    #return 200,"Test"
-    
+    return Markup(boardSVGRepr(global_board())) 
+
+@app.route("/initialize", methods=["GET"])
+def initialize():
+    initialize_game()
+    print("Game initialized")
+    return "Game initialized"
+
+@app.route("/play",methods=["GET"])
+def play_game():
+    print("Play")
+    values = call_jugador_v4()
+    return jsonify(values)
+
 
 
 

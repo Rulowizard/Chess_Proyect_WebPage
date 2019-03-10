@@ -10,6 +10,8 @@ bd = None
 
 global board_stop
 
+global board
+
 
 def who(player):
     return "Blanco" if player == chess.WHITE else "Negro"
@@ -531,16 +533,16 @@ def analisis_v4(board,move,player_color):
     
     ############################################ Genera BD para analisis
     
-    bd = bd.append( {"Turn":len(board.move_stack),"Player":player_color,"Move":move_str,"Hist_Turn":board.move_stack,
-                     "Score_Tot":score,"Score_Mov":score_mov,"Score_Tablero":score_tablero,"Score_regreso":score_regreso,
-                    "Move_Ant":(mov_anterior[2]+mov_anterior[3]+mov_anterior[0]+mov_anterior[1]),"Pieza":pieza_org,
-                    "Estoy_Jaque":estoy_en_jaque,"Score_Is_Check":score_is_check,"Score_Check_Mate":score_check_mate,
-                    "List_Attacks": str(list_attacked_pieces),"List_Possible_Squares":list_possible_squares,
-                    "Score_Is_Attacking":score_is_attacking,"Score_Is_Castling":score_is_castling,
-                     "Score_Is_Attacked":score_is_attacked,"Score_Estoy_Jaque":score_estoy_en_jaque,
-                     "Score_Late_Move":score_late_move,"Score_Early_Move":score_early_move,"Score_Buscar_Empate":score_buscar_empate,
-                     "Score_Evitar_Empate":score_evitar_empate,"FEN":str(board.fen).split("'")[1], "Depth":t_depth } , 
-                   ignore_index=True)
+    # bd = bd.append( {"Turn":len(board.move_stack),"Player":player_color,"Move":move_str,"Hist_Turn":board.move_stack,
+    #                  "Score_Tot":score,"Score_Mov":score_mov,"Score_Tablero":score_tablero,"Score_regreso":score_regreso,
+    #                 "Move_Ant":(mov_anterior[2]+mov_anterior[3]+mov_anterior[0]+mov_anterior[1]),"Pieza":pieza_org,
+    #                 "Estoy_Jaque":estoy_en_jaque,"Score_Is_Check":score_is_check,"Score_Check_Mate":score_check_mate,
+    #                 "List_Attacks": str(list_attacked_pieces),"List_Possible_Squares":list_possible_squares,
+    #                 "Score_Is_Attacking":score_is_attacking,"Score_Is_Castling":score_is_castling,
+    #                  "Score_Is_Attacked":score_is_attacked,"Score_Estoy_Jaque":score_estoy_en_jaque,
+    #                  "Score_Late_Move":score_late_move,"Score_Early_Move":score_early_move,"Score_Buscar_Empate":score_buscar_empate,
+    #                  "Score_Evitar_Empate":score_evitar_empate,"FEN":str(board.fen).split("'")[1], "Depth":t_depth } , 
+    #                ignore_index=True)
                 
     ############################################
     
@@ -792,10 +794,7 @@ def jugador_v1(board, color ,depth):
 
 
 #El metodo original deberia de recibir un tablero
-def boardSVGRepr():
-    #La siguiente linea solo es para hacer pruebas
-    board = chess.Board()
-
+def boardSVGRepr(board):
     return board._repr_svg_()
 
 
@@ -829,7 +828,7 @@ def play_game(player1, player2, visual="svg", pause=0.5, depth=0):
                 uci = player2(board,board.turn,depth)
             name = who(board.turn)
             board.push_uci(uci)
-            board_stop = boardSVGRepr()
+            board_stop = boardSVGRepr(board)
             html = "<b>Mueve %s %s, Play '%s', Mapa:</b><br/>%s" % (
                        len(board.move_stack), name, uci, board_stop)
             time.sleep(pause)
@@ -865,7 +864,28 @@ def play_game(player1, player2, visual="svg", pause=0.5, depth=0):
     
     return (result, msg, board)
 
+def global_board():
+    global board
+    return board
 
+def initialize_game():
+    #Crea un tablero nuevo
+    global board
+    board = chess.Board()
+
+def call_jugador_v4():
+    global board
+
+    #def jugador_v4(board,color_jugador,depth):
+    #Paso al jugador el tablero, regresa movimiento mas optimo
+    uci = jugador_v4(board,board.turn,0)
+    #Ejecuto el movimiento en el tablero
+    board.push_uci(uci)
+    print(not board.is_game_over(claim_draw=True))
+    #continue = True
+    svg = boardSVGRepr(board)
+
+    return [ svg  , not board.is_game_over(claim_draw=True) ]
 
 
 
