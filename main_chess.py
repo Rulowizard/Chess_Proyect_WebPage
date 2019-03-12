@@ -1,8 +1,9 @@
 from flask import Flask, render_template, redirect, Markup, request , Response, jsonify
 import pymongo, json
 
-from chess_engine import (jugador_v0, jugador_v5, boardSVGRepr, initialize_game, 
-    call_jugador_v4, global_board)
+from chess_engine import ( boardSVGRepr, initialize_game, 
+    call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
+    jugador_v3, jugador_v4, jugador_v5)
 
 
 # Create an instance of Flask
@@ -53,13 +54,56 @@ def initialize():
     print("Game initialized")
     return "Game initialized"
 
-@app.route("/play",methods=["GET"])
+@app.route("/play",methods=["GET"]) 
 def play_game():
-    print("Play")
+    print("Play") 
     values = call_jugador_v4()
+    return jsonify(values) 
+
+@app.route("/player", methods=["GET"])
+def player():
+    info=  request.url
+    print(info)
+
+
+
+    #Obtener el tablero actual y turno
+    board = global_board()
+    color = global_turn()
+
+    arreglo_str = info.split("&")
+    #Tipo de jugador
+    player = arreglo_str[0].split("=")[1]
+    print(player)
+    #Profundidad
+    depth = arreglo_str[1].split("=")[1]
+    print(depth)
+
+    #Condicionales para saber quien atiende
+    if player=="Humano":
+        print("Humano")
+
+    elif player =="M1":
+        print("M1")
+        values =  process_play( jugador_v1(board,color,depth) )
+
+    elif player =="M2":
+        print("M2")
+        values =  process_play( jugador_v2(board,color,depth) )
+    
+    elif player =="M3":
+        print("M3")
+        values =  process_play( jugador_v3(board,color,depth) )
+
+    elif player =="M4":
+        print("M4")
+        values =  process_play( jugador_v4(board,color,depth) )
+
+    elif player =="M5":
+        print("M5")
+        values =  process_play( jugador_v1(board,color,depth) )
+
     return jsonify(values)
-
-
 
 
 

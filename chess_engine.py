@@ -17,9 +17,7 @@ def who(player):
     return "Blanco" if player == chess.WHITE else "Negro"
 
 
-def jugador_v0(board,color,depth):
-    move = random.choice(list(board.legal_moves))
-    return move.uci()
+
 
 wb_horse = pd.DataFrame({"a":[-5.0,-4.0,-3.0,-3.0,-3.0,-3.0,-4.0,-5.0],
                          "b":[-4.0,-2.0,00.0,00.5,00.0,00.5,-2.0,-4.0],
@@ -757,40 +755,9 @@ def jugador_v2(board, color, depth):
     return moves[0].uci()
 
 
-
-def analisis_v1(board,move,player_color):
-    #Puntaje inicial
-    #Si no se pone el random siempre mueve las mismas piezas
-    score=random.random()
-    #Ejecutar movimiento
-    board.push(move)
-    
-    #ciclo que revisa en el tablero el par pieza/valor
-    for (pieza,valor) in [(chess.PAWN,10),(chess.BISHOP,30),(chess.KNIGHT,30),(chess.ROOK,50),(chess.QUEEN,90),(chess.KING,0)]:
-        #el puntaje sera mayor a cero si (suponiendo misma cantidad de piezas blancas y negras) el movimiento resulta en
-        #la captura de una pieza
-        score += len(board.pieces(pieza,player_color))*valor
-        score -= len(board.pieces(pieza,not player_color))*valor
-        
-    return score
-
-
-#Version mejorada del jugador aleratorio
-def jugador_v1(board, color ,depth):
-    
-    #Lista de posibles movimientos
-    moves= list(board.legal_moves)
-    
-    #Ciclo a iterar por cada movimiento disponible en la lista
-    for move in moves:
-        #Creo copia del tablero original
-        temp_board = board.copy()
-        #Envio copia del tablero, un movimiento e info de quien es el turno; se guarda la info
-        move.score = analisis_v1(temp_board,move,board.turn)
-       
-    moves.sort(key=lambda move: move.score, reverse=True)
-    
-    return moves[0].uci()
+def jugador_v1(board,color,depth):
+    move = random.choice(list(board.legal_moves))
+    return move.uci()
 
 
 #El metodo original deberia de recibir un tablero
@@ -868,6 +835,10 @@ def global_board():
     global board
     return board
 
+def global_turn():
+    global board
+    return board.turn
+
 def initialize_game():
     #Crea un tablero nuevo
     global board
@@ -886,6 +857,14 @@ def call_jugador_v4():
     svg = boardSVGRepr(board)
 
     return [ svg  , not board.is_game_over(claim_draw=True) ]
+
+
+def process_play(uci):
+    global board
+    board.push_uci(uci)
+    svg = boardSVGRepr(board)
+    return [svg, not board.is_game_over(claim_draw=True)]
+
 
 
 
