@@ -62,21 +62,17 @@ def play_game():
 
 @app.route("/player", methods=["GET"])
 def player():
-    info=  request.url
-    print(info)
-
-
 
     #Obtener el tablero actual y turno
     board = global_board()
     color = global_turn()
 
-    arreglo_str = info.split("&")
     #Tipo de jugador
-    player = arreglo_str[0].split("=")[1]
+    #El valor depues de coma es el default
+    player = request.args.get("player", "M1" )
     print(player)
     #Profundidad
-    depth = arreglo_str[1].split("=")[1]
+    depth = int( request.args.get("depth",0))
     print(depth)
 
     #Condicionales para saber quien atiende
@@ -102,7 +98,7 @@ def player():
     elif player =="M5":
         print("M5")
         values =  process_play( jugador_v1(board,color,depth) )
-
+    print(request.args) 
     return jsonify(values)
 
 
