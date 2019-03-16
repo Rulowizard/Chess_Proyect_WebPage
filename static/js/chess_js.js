@@ -8,6 +8,9 @@ var color=true;
 //Verdadero si no hay jaque mate o alguna condicion de mepate
 var continuar = true;
 
+//Arreglo que guardara los clicks del jugador humano
+var clicks =[];
+
 
 //Inicializa en el lado del servidor un tablero nuevo
 //No regresa el tablero pero si manda mensaje
@@ -84,6 +87,116 @@ function dibujarSVG(img){
   svg.innerHTML="";
   svg.appendChild(new_svg[0]);
 }
+
+//Proceso las coordenadas raw para convertirlas en
+//string tipo UCI
+function transformCoordinates(coord){
+  x=coord[0];
+  y=coord[1];
+
+  //Click está dentro del rango permitido
+  if(  (x>=20 && x<= 380) && ( y>=20 && y<=380 ) ){
+    //Inicializo variables de salida
+    var c1="" //X
+    var c2="" //Y
+
+    //Normalizo para quitar desfase
+    x=x-20;
+    y=y-20;
+
+    //Obtengo el número del cuadrante del tablero
+    cuadX = Math.ceil( x/45 );
+    cuadY = Math.ceil( y/45 );
+    console.log(cuadX);
+    console.log(cuadY);
+
+    //transformar cuadX a string
+    switch(cuadX){
+      case 1:
+        c1="a";
+        break;
+      case 2:
+        c1="b";
+        break;
+      case 3:
+        c1="c";
+        break;
+      case 4:
+        c1="d";
+        break;
+      case 5:
+        c1="e";
+        break;
+      case 6:
+        c1="f";
+        break;
+      case 7:
+        c1="g";
+        break;
+      case 8:
+        c1="h";
+        break;
+    }
+
+    //transformar cuadY
+    switch(cuadY){
+      case 1:
+        c2=8;
+        break;
+      case 2:
+        c2=7;
+        break;
+      case 3:
+        c2=6;
+        break;
+      case 4:
+        c2=5;
+        break;
+      case 5:
+        c2=4;
+        break;
+      case 6:
+        c2=3;
+        break;
+      case 7:
+        c2=2;
+        break;
+      case 8:
+        c2=1;
+        break;
+    }
+
+    resultado =c1+String(c2);
+    console.log(resultado)
+
+
+  } else{
+    console.log("Nok");
+  }
+}
+
+//Obtengo las coordenadas raw
+function getCoordinates(){
+  /*
+  var coordX = d3.event.clientX;
+  var coordY = d3.event.clientY;
+  var offsetX = d3.event.offsetX;
+  var offsetY = d3.event.offsetY;
+  var screenX = d3.event.screenX;
+  */
+  var pageX = d3.event.pageX;
+  var pageY = d3.event.pageY;
+
+  d3.select("#coordx").text(pageX- this.offsetLeft )
+  d3.select("#coordy").text(pageY- this.offsetTop)
+
+  //LINEA DE PRUEBA
+  transformCoordinates( [pageX-this.offsetLeft , pageY-this.offsetTop ]  );
+
+  return [pageX-this.offsetLeft , pageY-this.offsetTop ];
+}
+
+
 
 
 
@@ -224,3 +337,5 @@ d3.select("#play").on("click", handlePlay);
 d3.select("#game").on("click", game);
 
 d3.select("#restart").on("click", initialize);
+
+d3.select("#svg").on("click",getCoordinates)
