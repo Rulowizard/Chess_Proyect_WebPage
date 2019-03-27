@@ -30,20 +30,40 @@ function initialize(){
 //Recibe valor de la lista de seleccion del jugador actual y profundidad
 async function getInfo(player,depth){
   var info="";
-  info= await $.get("player",{player:player,depth:depth},function(data){
-    //Data[0] viene info sobre la imagen SVG
-    //Data[1] es la variable bool que indica si continua el juego
-    
-    //Convierte el string en objeto
-    var obj_svg=$(data[0])
-    //Acceder a la info de la imagen
-    var img_svg=obj_svg[0]
 
-    return {cont:data[1],img:data[0]};
-  });
+  if (player == "Humano"){
 
-  return info;
+
+
+
+  } else{
+    info= await $.get("player",{player:player,depth:depth},function(data){
+      //Data[0] viene info sobre la imagen SVG
+      //Data[1] es la variable bool que indica si continua el juego
+      
+      //Convierte el string en objeto
+      var obj_svg=$(data[0])
+      //Acceder a la info de la imagen
+      var img_svg=obj_svg[0]
+
+      return {cont:data[1],img:data[0]};
+    });
+
+    return info;
+  }
 }
+
+//Regresa el valor de profundidad de la lista de seleccion para el jugador actual
+//usa la variable global de color
+function getSelDepth(){
+  if (color==true){
+    var sj = d3.select("#depth1")
+  }else{
+    var sj = d3.select("#depth2")
+  }
+  return sj.property("value");
+}
+
 
 //Regresa el valor de la lista de seleccion para el jugador actual
 //usa la variable global de color
@@ -71,6 +91,9 @@ function serverSelPlayer(selValue){
       break;
     case "Maquina 4":
       player="M4"
+      break;
+    case "Humano":
+      player="Humano"
       break;
     default:
       player="M5"
@@ -175,6 +198,8 @@ function transformCoordinates(coord){
   }
 }
 
+
+
 //Obtengo las coordenadas raw
 function getCoordinates(){
   /*
@@ -202,7 +227,7 @@ async function game(){
   while (continuar==true){
     var tipo_jugador=getSelPlayer()
     var tipo_jug_serv = serverSelPlayer(tipo_jugador)
-    var data = await getInfo(tipo_jug_serv,0)
+    var data = await getInfo(tipo_jug_serv, getSelDepth() )
     dibujarSVG(data[0]);
     continuar = data[1];
     color = !color;
