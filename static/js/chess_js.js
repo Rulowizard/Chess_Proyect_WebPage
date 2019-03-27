@@ -192,8 +192,6 @@ function getCoordinates(){
 
   //LINEA DE PRUEBA
   transformCoordinates( [pageX-this.offsetLeft , pageY-this.offsetTop ]  );
-
-  return [pageX-this.offsetLeft , pageY-this.offsetTop ];
 }
 
 
