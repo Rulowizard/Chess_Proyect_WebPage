@@ -12,6 +12,8 @@ var continuar = true;
 var clicks =[];
 
 
+
+
 //Inicializa en el lado del servidor un tablero nuevo
 //No regresa el tablero pero si manda mensaje
 function initialize(){
@@ -31,26 +33,20 @@ function initialize(){
 async function getInfo(player,depth){
   var info="";
 
-  if (player == "Humano"){
+  info= await $.get("player",{player:player,depth:depth},function(data){
+    //Data[0] viene info sobre la imagen SVG
+    //Data[1] es la variable bool que indica si continua el juego
+    
+    //Convierte el string en objeto
+    var obj_svg=$(data[0])
+    //Acceder a la info de la imagen
+    var img_svg=obj_svg[0]
 
+    return {cont:data[1],img:data[0]};
+  });
 
+  return info;
 
-
-  } else{
-    info= await $.get("player",{player:player,depth:depth},function(data){
-      //Data[0] viene info sobre la imagen SVG
-      //Data[1] es la variable bool que indica si continua el juego
-      
-      //Convierte el string en objeto
-      var obj_svg=$(data[0])
-      //Acceder a la info de la imagen
-      var img_svg=obj_svg[0]
-
-      return {cont:data[1],img:data[0]};
-    });
-
-    return info;
-  }
 }
 
 //Regresa el valor de profundidad de la lista de seleccion para el jugador actual
@@ -192,6 +188,19 @@ function transformCoordinates(coord){
     resultado =c1+String(c2);
     console.log(resultado)
 
+    //Agrego el recuadro en el arreglo
+    clicks.push(resultado);
+
+    //Elimino duplicados
+    clicks = [...new Set(clicks)];
+
+    //Si tengo dos movimientos no duplicados entro
+    if( clicks.length>1 ){
+      console.log("--")
+      console.log( clicks.length  )
+
+    }
+
 
   } else{
     console.log("Nok");
@@ -225,12 +234,23 @@ function getCoordinates(){
 
 async function game(){
   while (continuar==true){
+
+
+    //Extrae el valor de la lista de seleccion del jugador en turno
     var tipo_jugador=getSelPlayer()
-    var tipo_jug_serv = serverSelPlayer(tipo_jugador)
-    var data = await getInfo(tipo_jug_serv, getSelDepth() )
-    dibujarSVG(data[0]);
-    continuar = data[1];
-    color = !color;
+
+    if ( tipo_jugador=="Humano" ){
+
+
+    } else{
+      var tipo_jug_serv = serverSelPlayer(tipo_jugador)
+      var data = await getInfo(tipo_jug_serv, getSelDepth() )
+      dibujarSVG(data[0]);
+      continuar = data[1];
+      color = !color;
+
+    }
+
   }
 }
 
@@ -252,7 +272,6 @@ function handleSubmit() {
     var svg = document.getElementById("svg");
     svg.innerHTML="";
     svg.appendChild(new_svg[0]);
-    turno ="W";
   });
 
 
@@ -279,7 +298,7 @@ function handlePlay(){
   var depth=0;
   var player;
 
-  if (turno=="W") {
+  if (color==true) {
     
     switch(j1){
       case "Maquina 1":
@@ -308,7 +327,7 @@ function handlePlay(){
       svg.appendChild(new_svg[0]);
     });
 
-    turno="B";
+    color=false;
 
   }else{
 
@@ -338,7 +357,7 @@ function handlePlay(){
       svg.appendChild(new_svg[0]);
     });
 
-    turno="W"
+    color=true
 
   }
 
@@ -359,6 +378,8 @@ d3.select("#play").on("click", handlePlay);
 //Add event listener for submit button
 d3.select("#game").on("click", game);
 
+//Add event listener for Restart button
 d3.select("#restart").on("click", initialize);
 
+//Add event listener to click on board
 d3.select("#svg").on("click",getCoordinates)
