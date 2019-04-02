@@ -6,18 +6,21 @@
 
   <title>Strategic Chess Player - Home</title>
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" 
-  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" 
-  crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" 
-  integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" 
-  crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.5.0/d3.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-
+  <style>
+    .carousel-text{
+        background-color: white ;
+        opacity: .7
+    }
+  </style>
   
 
 </head>
@@ -32,11 +35,82 @@
             <ul class="nav navbar-nav" >
                 <li class="active" > <a href="/" >Home</a> </li>
                 <li> <a href="/load" >Load Game</a> </li>
+                <li> <a href="/svg_test">Play Game</a>  </a> </li>
             </ul>
 
 
         </div>
     </nav>
+
+
+    <div class="container-fluid">
+
+        <div id="myCarousel" class="carousel slide" data-ride="carousel" >
+            
+            <ol class="carousel-indicators">
+                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#myCarousel" data-slide-to="1"></li>
+                <li data-target="#myCarousel" data-slide-to="2"></li>
+                <li data-target="#myCarousel" data-slide-to="3"></li>
+                <li data-target="#myCarousel" data-slide-to="4"></li>
+                <li data-target="#myCarousel" data-slide-to="5"></li>
+            </ol>
+
+            <div class="carousel-inner">
+                <div class="item active"  >
+                    <img src="" style="width:100%;" id="img1" >
+                    <div class="carousel-caption" >
+                        <a id="c1" class="carousel-text" ></a>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <img src="" style="width:100%;" id="img2">
+                    <div class="carousel-caption" >
+                        <a id="c2" class="carousel-text" ></a>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <img src="" style="width:100%;" id="img3">
+                    <div class="carousel-caption" >
+                        <a id="c3" class="carousel-text" ></a>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <img src="" style="width:100%;" id="img4">
+                    <div class="carousel-caption" >
+                        <a id="c4" class="carousel-text" ></a>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <img src="" style="width:100%;" id="img5">
+                    <div class="carousel-caption" >
+                        <a id="c5" class="carousel-text" ></a>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <img src="" style="width:100%;" id="img6">
+                    <div class="carousel-caption" >
+                        <a id="c6" class="carousel-text" ></a>
+                    </div>
+                </div>
+            </div>
+
+            <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+
+            <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+
+        </div>
+    </div>
+
 
 
 
@@ -53,7 +127,7 @@
     <p>Main Page</p>
 
 
-
+    <script src="{{ url_for('static', filename='js/index_js.js') }}"></script>
 
 </body>
 

@@ -102,6 +102,8 @@ def get_move(prompt):
         chess.Move.from_uci(uci)
     except:
         uci = None
+
+    print("En get_move")
     return uci
 
 def jugador_humano(board, color, depth):
@@ -859,8 +861,22 @@ def call_jugador_v4():
     return [ svg  , not board.is_game_over(claim_draw=True) ]
 
 
+def get_uci(text):
+    uci = text
+    if uci and uci[0] == "q":
+        raise KeyboardInterrupt()
+    try:
+        chess.Move.from_uci(uci)
+    except:
+        uci = None
+
+    print("En get_move")
+    return uci
+
+
 def process_play(uci):
     global board
+    print("En process_play")
     board.push_uci(uci)
     svg = boardSVGRepr(board)
     return [svg, not board.is_game_over(claim_draw=True)]

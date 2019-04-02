@@ -21,7 +21,6 @@ function initialize(){
   continuar=true;
 
   $.get("initialize",function(data){
-    console.log(data);
   });
 }
 
@@ -43,7 +42,7 @@ async function getInfo(player,depth){
     var img_svg=obj_svg[0]
 
     return {cont:data[1],img:data[0]};
-  });
+  }).then(d => d);
 
   return info;
 
@@ -126,8 +125,6 @@ function transformCoordinates(coord){
     //Obtengo el número del cuadrante del tablero
     cuadX = Math.ceil( x/45 );
     cuadY = Math.ceil( y/45 );
-    console.log(cuadX);
-    console.log(cuadY);
 
     //transformar cuadX a string
     switch(cuadX){
@@ -186,7 +183,6 @@ function transformCoordinates(coord){
     }
 
     resultado =c1+String(c2);
-    console.log(resultado)
 
     //Agrego el recuadro en el arreglo
     clicks.push(resultado);
@@ -194,30 +190,43 @@ function transformCoordinates(coord){
     //Elimino duplicados
     clicks = [...new Set(clicks)];
 
-    //Si tengo dos movimientos no duplicados entro
-    if( clicks.length>1 ){
-      console.log("--")
-      console.log( clicks.length  )
-
-    }
-
 
   } else{
     console.log("Nok");
   }
 }
 
+async function getInfoHuman(click){
+  var info="";
+  console.log(click)
+  console.log("Entro getInfoHuman")
+  var move= click[0]+click[1]
+  info= await $.get("player",{player:"Humano",clicks:move}
+    // //Data[0] viene info sobre la imagen SVG
+    // //Data[1] es la variable bool que indica si continua el juego
+    // //Convierte el string en objeto
+    // var obj_svg=$(data[0])
+    // //Acceder a la info de la imagen
+    // var img_svg=obj_svg[0]
+
+    //return {cont:data[1],img:data[0]};
+  ).then(data => {
+    //Data[0] viene info sobre la imagen SVG
+    //Data[1] es la variable bool que indica si continua el juego
+    //Convierte el string en objeto
+    var obj_svg=$(data[0])
+    //Acceder a la info de la imagen
+    var img_svg=obj_svg[0]
+
+    return {cont:data[1],img:data[0]};
+  });
+  console.log(info)
+  return info;
+}
 
 
 //Obtengo las coordenadas raw
 function getCoordinates(){
-  /*
-  var coordX = d3.event.clientX;
-  var coordY = d3.event.clientY;
-  var offsetX = d3.event.offsetX;
-  var offsetY = d3.event.offsetY;
-  var screenX = d3.event.screenX;
-  */
   var pageX = d3.event.pageX;
   var pageY = d3.event.pageY;
 
@@ -228,10 +237,7 @@ function getCoordinates(){
   transformCoordinates( [pageX-this.offsetLeft , pageY-this.offsetTop ]  );
 }
 
-
-
-
-
+/////////////////////////////////////////////////////////////
 async function game(){
   while (continuar==true){
 
@@ -239,7 +245,19 @@ async function game(){
     //Extrae el valor de la lista de seleccion del jugador en turno
     var tipo_jugador=getSelPlayer()
 
+    console.log(tipo_jugador, tipo_jugador=="Humano");
+
     if ( tipo_jugador=="Humano" ){
+
+          
+        var data = await getInfoHuman(clicks)
+        console.log("----")
+        console.log(data)
+        dibujarSVG(data[0]);
+        continuar = data[1];
+        color = !color;
+        clicks=[];
+
 
 
     } else{
@@ -262,12 +280,8 @@ function handleSubmit() {
   console.log("handleSubmit");
 
   $.get("game",function(data){
-    console.log( typeof data );
-    console.log(data);
 
     var new_svg = $(data);
-    console.log(typeof new_svg);
-    console.log(new_svg[0]);
     
     var svg = document.getElementById("svg");
     svg.innerHTML="";
@@ -290,10 +304,6 @@ function handlePlay(){
 
   var j1 = sj1.property("value");
   var j2 = sj2.property("value");
-
-  console.log(j1);
-  console.log(j2);
-
 
   var depth=0;
   var player;

@@ -1,9 +1,10 @@
 from flask import Flask, render_template, redirect, Markup, request , Response, jsonify
 import pymongo, json
+import chess_scrape
 
 from chess_engine import ( boardSVGRepr, initialize_game, 
     call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
-    jugador_v3, jugador_v4, jugador_v5)
+    jugador_v3, jugador_v4, jugador_v5, get_uci)
 
 
 # Create an instance of Flask
@@ -60,9 +61,15 @@ def play_game():
     values = call_jugador_v4()
     return jsonify(values) 
 
+@app.route("/scrape",methods=["GET"])
+def scrape():
+    info = chess_scrape.scrape()
+    return jsonify(info)
+
+
 @app.route("/player", methods=["GET"])
 def player():
-
+    print("-----")
     #Obtener el tablero actual y turno
     board = global_board()
     color = global_turn()
@@ -74,14 +81,20 @@ def player():
     #Profundidad
     depth = int( request.args.get("depth",0))
     print(depth)
-
+    
     #Condicionales para saber quien atiende
     if player=="Humano":
         print("Humano")
+        move = request.args.get("clicks")
+        uci = get_uci(move)
+        values = process_play( uci )
+        print(".....")
+
 
     elif player =="M1":
         print("M1")
         values =  process_play( jugador_v1(board,color,depth) )
+        
 
     elif player =="M2":
         print("M2")
@@ -98,7 +111,6 @@ def player():
     elif player =="M5":
         print("M5")
         values =  process_play( jugador_v1(board,color,depth) )
-    print(request.args) 
     return jsonify(values)
 
 
