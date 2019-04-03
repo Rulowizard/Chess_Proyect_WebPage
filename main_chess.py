@@ -1,10 +1,11 @@
-from flask import Flask, render_template, redirect, Markup, request , Response, jsonify
+from flask import (Flask, render_template, redirect, Markup, request , 
+    Response, jsonify,url_for)
 import pymongo, json
 import chess_scrape
 
 from chess_engine import ( boardSVGRepr, initialize_game, 
     call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
-    jugador_v3, jugador_v4, jugador_v5, get_uci, fen_representation)
+    jugador_v3, jugador_v4, jugador_v5, get_uci, fen_representation, initialize_game_fen)
 
 
 # Create an instance of Flask
@@ -15,6 +16,13 @@ conn = "mongodb://localhost:27017"
 client = pymongo.MongoClient(conn)
 db = client.chess
 
+#Global Variables
+
+
+global flagLoadGame
+flagLoadGame=False
+global globalFEN
+globalFEN=""
 
 # Route to render index.html template using data from Mongo
 @app.route("/")
@@ -46,7 +54,14 @@ def saved_games():
 
     return jsonify(mongo_games)
 
-
+@app.route("/load_game",methods=["GET"])
+def load_game():
+    global flagLoadGame
+    global globalFEN
+    globalFEN = request.args.get("fen")
+    flagLoadGame=True
+    print(globalFEN)
+    return "OK"
 
 
 @app.route("/svg_test")
@@ -61,9 +76,21 @@ def game():
 
 @app.route("/initialize", methods=["GET"])
 def initialize():
-    initialize_game()
+    global flagLoadGame
+    global globalFEN
+
+    if  flagLoadGame==False:
+        initialize_game()
+        text="Normal Initialize"
+    else:
+        initialize_game_fen(globalFEN)
+        flagLoadGame=False
+        globalFEN=""
+        text="FEN Initialize"
+
+
     print("Game initialized")
-    return "Game initialized"
+    return text
 
 @app.route("/play",methods=["GET"]) 
 def play_game():

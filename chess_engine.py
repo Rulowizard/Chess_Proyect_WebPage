@@ -846,6 +846,13 @@ def initialize_game():
     global board
     board = chess.Board()
 
+def initialize_game_fen(fen):
+    global board
+    board = chess.Board(fen)
+    print(board)
+
+    
+
 def call_jugador_v4():
     global board
 

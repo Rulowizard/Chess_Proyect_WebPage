@@ -21,6 +21,7 @@ function initialize(){
   continuar=true;
 
   $.get("initialize",function(data){
+    console.log(data)
   });
 }
 
