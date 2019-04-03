@@ -882,6 +882,10 @@ def process_play(uci):
     return [svg, not board.is_game_over(claim_draw=True)]
 
 
+def fen_representation(board):
+    return board.fen()
+
+
 
 
 

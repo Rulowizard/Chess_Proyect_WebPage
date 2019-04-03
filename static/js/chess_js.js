@@ -373,6 +373,20 @@ function handlePlay(){
 
 }
 
+function save(){
+  //Obtengo svg
+  var svg = document.getElementById("svg").innerHTML 
+
+  $.get("save",{svg:svg},function(data){
+    console.log(data)
+  })
+
+  ////////////////////////////////////
+  // Modificar HTML para mostrar mensaje que se guardó el juego de forma exitosa
+
+
+
+}
 
 
 
@@ -393,3 +407,6 @@ d3.select("#restart").on("click", initialize);
 
 //Add event listener to click on board
 d3.select("#svg").on("click",getCoordinates)
+
+//Add event listener to click on board
+d3.select("#save").on("click",save)

@@ -4,7 +4,7 @@ import chess_scrape
 
 from chess_engine import ( boardSVGRepr, initialize_game, 
     call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
-    jugador_v3, jugador_v4, jugador_v5, get_uci)
+    jugador_v3, jugador_v4, jugador_v5, get_uci, fen_representation)
 
 
 # Create an instance of Flask
@@ -27,7 +27,6 @@ def index():
     print("Home")
 
     number_of_games = len( list(db.games.find()))
-    print(number_of_games)
 
     return render_template("index.html", numb_games= number_of_games)
 
@@ -36,8 +35,19 @@ def load():
 
     print("Load")
 
-    saved_games = list(db.games.find())
-    return render_template("load_page.html", saved_games=saved_games)
+    return render_template("load_page.html")
+
+@app.route("/saved_games",methods=["GET"])
+def saved_games():
+
+    #Obtengo lista de todos los juegos guardados
+    #Quito de la lsita de resultados el id ya que no es un objeto primitivo
+    mongo_games = list( db.games.find({},{"_id":0}))
+
+    return jsonify(mongo_games)
+
+
+
 
 @app.route("/svg_test")
 def test():
@@ -65,6 +75,29 @@ def play_game():
 def scrape():
     info = chess_scrape.scrape()
     return jsonify(info)
+
+@app.route("/save", methods=["GET"])
+def save():
+
+    #Recibo string que representa imagen svg
+    svg = request.args.get("svg")
+    #Obtengo tablero actual
+    board = global_board()
+    #Obtengo representacion FEN del tablero
+    fen = fen_representation(board)
+    print("FEN:")
+    print(fen)
+
+    db.games.insert_one(
+        {
+            "svg":svg,
+            "fen":fen
+        }
+    )
+    
+    
+
+    return jsonify("Info recibida")
 
 
 @app.route("/player", methods=["GET"])
