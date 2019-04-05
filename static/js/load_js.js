@@ -35,7 +35,7 @@ function initialize(){
             img_r.attr("width",400)
 
             //Escribir la info de texto
-            var cols2 = rows.append("div").attr("class","col-xs-5")
+            var cols2 = rows.append("div").attr("class","col-xs-4 col-xs-offset-1")
 
             //Escribir H
             var h_text = cols2.append("h2").attr("class","h-paneles")
@@ -47,15 +47,20 @@ function initialize(){
             var li1 = cols2.append("li").attr("class","p-li").text(data[i].fen)
             var br1 = cols2.append("br").attr("class","p-br")
 
-            var p2 = cols2.append("p").attr("class","p-label").text("Próximo turno:")
-            var prox_turno = data[i].fen.split(" ")[ data[i].fen.split(" ").length-1   ]
-            var li2 = cols2.append("li").attr("class","p-li").text(prox_turno);
-            var br2 = cols2.append("br").attr("class","p-br")
-
             var p3 = cols2.append("p").attr("class","p-label").text("Jugador a mover:")
             var prox_jugador = data[i].fen.split(" ")[1]
             var li3 = cols2.append("li").attr("class","p-li").text(prox_jugador);
             var br3 = cols2.append("br").attr("class","p-br")
+
+            var p2 = cols2.append("p").attr("class","p-label").text("Turno:")
+            var prox_turno = data[i].fen.split(" ")[ data[i].fen.split(" ").length-1   ]
+            if( prox_jugador=="b" ){
+                prox_turno = String(  (parseInt( prox_turno )*2)-1 )
+            } else{
+                prox_turno= String(  (parseInt(prox_turno)*2)-2  )
+            }
+            var li2 = cols2.append("li").attr("class","p-li").text(prox_turno);
+            var br2 = cols2.append("br").attr("class","p-br")
 
         }
 

@@ -51,10 +51,6 @@
             " - " + $( "#slider-range" ).slider( "values", 1 ) );
         } );
     </script>
-
-
-
-
 </head>
 
 <body>
@@ -75,27 +71,39 @@
 
     <div class="container-fluid" >   
 
-        <p id="p-slider">
-            <label for="amount">Game turn range:</label>
-            <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-        </p>
-        <div id="slider-range"></div>
+        <div class="c-controles" id="id-controles" >
+            <div class="row" >
+                <div class="col-xs-7 col-xs-offset-1" >
+                    <p id="p-slider">
+                        <label for="amount">Game turn range:</label>
+                        <input type="text" id="amount" readonly style="border:0; color:rgb(0, 0, 0); font-weight:bold;">
+                    </p>
+                    <div id="slider-range"></div>
+                </div>
 
-        <select id="selDepth" class="form-control">
-            <option>All</option>
-            <option>Depth 0</option>
-            <option>Depth 1</option>
-            <option>Depth 2</option>
-        </select>
+                <div class="col-xs-1" >
+                    <label for="selPlayer">Player</label>
+                    <select id="selPlayer" class="form-control">
+                        <option>All</option>
+                        <option>Machine 1</option>
+                        <option>Machine 2</option>
+                        <option>Machine 3</option>
+                        <option>Machine 4</option>
+                        <option>Machine 5</option>
+                    </select>
+                </div>
 
-        <select id="selPlayer" class="form-control">
-            <option>All</option>
-            <option>Machine 1</option>
-            <option>Machine 2</option>
-            <option>Machine 3</option>
-            <option>Machine 4</option>
-            <option>Machine 5</option>
-        </select>
+                <div class="col-xs-1" >
+                    <label for="selDepth">Depth</label>
+                    <select id="selDepth" class="form-control">
+                        <option>All</option>
+                        <option>Depth 0</option>
+                        <option>Depth 1</option>
+                        <option>Depth 2</option>
+                    </select>
+                </div>
+            </div>
+        </div>
         
         <div id="img" ></div>
         <div id="img-2" ></div>
@@ -104,10 +112,6 @@
     <div class="footer">
         <h4 style="margin-bottom:0px;padding-bottom: 15px;padding-top: 15px;margin-top: 0px;" > © Rulo & Company 2019. All rights reserved. </h4>
     </div>
-
-
-
-
     <script src="{{ url_for('static', filename='js/statistics_js.js') }}"></script>
 </body>
 

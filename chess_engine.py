@@ -917,7 +917,21 @@ def process_play(uci,player_type,depth):
     board.push_uci(uci)
 
     #Longitud del juego
-    game_len = len(board.move_stack)
+    #game_len = len(board.move_stack)
+    arr_fen= fen_representation(board).split(" ")
+    print( fen_representation(board) )
+    if( arr_fen[1]=="b" and arr_fen[5]=="1" ):
+        game_len = 1 
+    elif ( arr_fen[1]=="w" and arr_fen[5]=="2"  ):
+        game_len= 2
+    elif ( arr_fen[1]=="b" ):
+        print("b")
+        game_len=  (int(arr_fen[5])*2) -1
+    else:
+        print("w")
+        game_len = (int(arr_fen[5])*2) -2
+    
+
     #Si juego ya acabo
     end_game = board.is_game_over(claim_draw=True)
 

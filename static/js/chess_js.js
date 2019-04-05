@@ -27,6 +27,9 @@ function initialize(){
   game_len=0;
   msg="";
   result="";
+  var contenedor = d3.select("#contenedor-text");
+  //Quitar todos los elementos del contenedor
+  contenedor.selectAll("*").remove();
 
   $.get("initialize",function(data){
     console.log(data)
@@ -37,6 +40,7 @@ function initialize(){
 
 //Modificar HTML para mostrar estadisticas basicas del juego
 function game_stats(data){
+  console.log(data)
   //Seleccionar el contenedor
   var contenedor = d3.select("#contenedor-text");
   //Quitar todos los elementos del contenedor
