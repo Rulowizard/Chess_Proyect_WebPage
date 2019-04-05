@@ -4,8 +4,6 @@ lista_link=""
 function initialize(){
     $.get("scrape",function(data){
 
-        console.log(data)
-
         //Extraigo la info de las fuentes de las imagenes
         lista_src=data[2];
         //Extraigo texto noticia
@@ -40,7 +38,27 @@ function initialize(){
     });
 }
 
+function quickStats(){
+    $.get("quickStats", function(data){
+        var div = d3.select("#quick-stats")
+        var p1 = div.append("p").text("Total games: " + String(data[2]) )
+        var br1 = div.append("br")
+        var p2 = div.append("p").text("Total movements: " + String(data[0]) )
+        var br2 = div.append("br")
+        var p3 = div.append("p").text("Total analyzed positions: " + String(data[1]))
+        var br3 = div.append("br")
+        var p4 = div.append("p").text("Most successful player: " + data[3] )
+        var br4 = div.append("br")
+        var p5 = div.append("p").text("Matches won: " + String(data[4]) )
+        var br5 = div.append("br")
+        var p6 = div.append("p").text("Least successful player: " + data[5] )
+        var br6 = div.append("br")
+        var p7 = div.append("p").text("Matches won: " + String(data[6]) )
+    });
+}
 
+// Se usa para llenar la info de los QuickStats
+quickStats();
 
 //Lleno la pagina principal con informacion
 initialize();

@@ -3,7 +3,6 @@ var globalFEN=[]
 
 function initialize(){
     $.get("saved_games", function(data){
-        console.log(data);
 
         for (i=0; i<data.length ; i++){
 
@@ -29,6 +28,11 @@ function initialize(){
             svg.innerHTML="";
             //Agrego imagen SVG
             svg.appendChild(img[0]);
+            
+            //Modifico el tamaño de la imagen
+            var img_r = d3.selectAll("svg")
+            img_r.attr("height",400)
+            img_r.attr("width",400)
 
             //Escribir la info de texto
             var cols2 = rows.append("div").attr("class","col-xs-5")
@@ -72,7 +76,6 @@ function panelClick(){
 
     //Obtengo el FEN del panel sobre el cual se hizo click
     fen= globalFEN[ parseInt( this.id.split("-")[2]) ]
-    console.log(fen)
 
     $.get("load_game",{fen:fen},function(data){
         window.location.href = "/svg_test"

@@ -7,9 +7,14 @@
 var color=true;
 //Verdadero si no hay jaque mate o alguna condicion de mepate
 var continuar = true;
-
 //Arreglo que guardara los clicks del jugador humano
 var clicks =[];
+//Variable que guarda la longitud del juego
+var game_len=0;
+//Variabele que guarda forma en que acabo el juego
+var msg="";
+//Variable que guarda el ganador de la partida
+var result="";
 
 
 
@@ -19,12 +24,37 @@ var clicks =[];
 function initialize(){
   color=true;
   continuar=true;
+  game_len=0;
+  msg="";
+  result="";
 
   $.get("initialize",function(data){
     console.log(data)
+    handleSubmit()
   });
+
 }
 
+//Modificar HTML para mostrar estadisticas basicas del juego
+function game_stats(data){
+  //Seleccionar el contenedor
+  var contenedor = d3.select("#contenedor-text");
+  //Quitar todos los elementos del contenedor
+  contenedor.selectAll("*").remove();
+  //Agregar titulo
+  var h2s = contenedor.append("h1").attr("class","titulo")
+  h2s.text("Game Information")
+  //Agregar espacio
+  var br1 =contenedor.append("br")
+  //Agregar texto
+  var p1 = contenedor.append("p").attr("class","stat-text").text("Turno: "+data[2] )
+  var p2 = contenedor.append("p").attr("class","stat-text").text("Mueve: " + String( (color==true) ? "Blanco" :"Negro") )
+  if(data[3]!=""){
+    var p3= contenedor.append("p").attr("class","stat-text").text("Resultado: " + data[3] )
+    var p4= contenedor.append("p").attr("class","stat-text").text("Ganador: " +data[4])
+  }
+
+}
 
 
 //Regresa imagen SVG y valor si continua el juego
@@ -41,6 +71,10 @@ async function getInfo(player,depth){
     var obj_svg=$(data[0])
     //Acceder a la info de la imagen
     var img_svg=obj_svg[0]
+
+    game_stats(data);
+
+
 
     return {cont:data[1],img:data[0]};
   }).then(d => d);
@@ -105,6 +139,9 @@ function dibujarSVG(img){
   var svg = document.getElementById("svg");
   svg.innerHTML="";
   svg.appendChild(new_svg[0]);
+  var img = d3.select("svg")
+  img.attr("height",500)
+  img.attr("width",500)
 }
 
 //Proceso las coordenadas raw para convertirlas en
@@ -242,24 +279,19 @@ function getCoordinates(){
 async function game(){
   while (continuar==true){
 
-
     //Extrae el valor de la lista de seleccion del jugador en turno
     var tipo_jugador=getSelPlayer()
 
     console.log(tipo_jugador, tipo_jugador=="Humano");
 
-    if ( tipo_jugador=="Humano" ){
-
-          
-        var data = await getInfoHuman(clicks)
-        console.log("----")
-        console.log(data)
-        dibujarSVG(data[0]);
-        continuar = data[1];
-        color = !color;
-        clicks=[];
-
-
+    if ( tipo_jugador=="Humano" ){   
+      var data = await getInfoHuman(clicks)
+      console.log("----")
+      console.log(data)
+      dibujarSVG(data[0]);
+      continuar = data[1];
+      color = !color;
+      clicks=[];
 
     } else{
       var tipo_jug_serv = serverSelPlayer(tipo_jugador)
@@ -269,109 +301,25 @@ async function game(){
       color = !color;
 
     }
-
   }
 }
-
 
 //Obtener tablero SVG actual
 // Submit Button handler
 function handleSubmit() {
-    
   console.log("handleSubmit");
-
   $.get("game",function(data){
-
-    var new_svg = $(data);
-    
-    var svg = document.getElementById("svg");
-    svg.innerHTML="";
-    svg.appendChild(new_svg[0]);
+   dibujarSVG(data)
   });
-
-
 }
 
-
-function handlePlay(){
-  console.log("handlePlay");
-  var cont = new Boolean(true);
-  var new_svg ="";
-  var svg = "";
-  var ciclo=0;
-
-  var sj1 = d3.select("#selPlayer1");
-  var sj2 = d3.select("#selPlayer2");
-
-  var j1 = sj1.property("value");
-  var j2 = sj2.property("value");
-
-  var depth=0;
-  var player;
-
-  if (color==true) {
-    
-    switch(j1){
-      case "Maquina 1":
-        player="M1"
-        break;
-      case "Maquina 2":
-        player="M2"
-        break;
-      case "Maquina 3":
-        player="M3"
-        break;
-      case "Maquina 4":
-        player="M4"
-        break;
-      default:
-        player="M5"
-    }
-    console.log(player)
-    
-
-    $.get("player",{player: player, depth:0},function(data){
-      cont = data[1];
-      new_svg = $(data[0]);
-      svg = document.getElementById("svg");
-      svg.innerHTML="";
-      svg.appendChild(new_svg[0]);
-    });
-
-    color=false;
-
-  }else{
-
-    switch(j2){
-      case "Maquina 1":
-        player="M1"
-        break;
-      case "Maquina 2":
-        player="M2"
-        break;
-      case "Maquina 3":
-        player="M3"
-        break;
-      case "Maquina 4":
-        player="M4"
-        break;
-      default:
-        player="M5"
-    }
-    console.log(player)
-
-    $.get("player",{player: player, depth:0},function(data){
-      cont = data[1];
-      new_svg = $(data[0]);
-      svg = document.getElementById("svg");
-      svg.innerHTML="";
-      svg.appendChild(new_svg[0]);
-    });
-
-    color=true
-
-  }
-
+async function handlePlay(){
+  var tipo_jugador=getSelPlayer()
+  var tipo_jug_serv = serverSelPlayer(tipo_jugador)
+  var data = await getInfo(tipo_jug_serv, getSelDepth() )
+  dibujarSVG(data[0]);
+  continuar = data[1];
+  color = !color;
 }
 
 function save(){
@@ -384,15 +332,18 @@ function save(){
 
   ////////////////////////////////////
   // Modificar HTML para mostrar mensaje que se guardó el juego de forma exitosa
-
-
+  //Seleccionar el contenedor
+  var contenedor = d3.select("#contenedor-text");
+  //Quitar todos los elementos del contenedor
+  contenedor.selectAll("*").remove();
+  //Agregar titulo
+  var h2s = contenedor.append("h1").attr("class","titulo")
+  h2s.text("Successfully Saved Game")
 
 }
 
-
-
-
 initialize();
+handleSubmit()
 
 // Add event listener for submit button
 d3.select("#submit").on("click", handleSubmit);

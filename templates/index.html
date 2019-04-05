@@ -18,17 +18,37 @@
   <style>
     .carousel-text{
         background-color: white ;
-        opacity: .7
+        opacity: .7;
+        font-size: 40px;
+        color: black;
     }
+
+    .section-title{
+        text-align: center;
+    }
+
+    .arqui{
+        size: 100%
+    }
+
+    .footer{
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #EEEEEE;
+            color:darkgrey;
+            text-align: center;
+    }
+
+
   </style>
   
 
 </head>
 
 <body>
-
-    <nav class="navbar navbar-default">
-        <div class="container-fluid" >
+    <div class="container-fluid" >
+        <nav class="navbar navbar-default">
             <div class="navbar-header">
                 <a class="navbar-brand" href="#" >SCP</a>
             </div>
@@ -36,11 +56,10 @@
                 <li class="active" > <a href="/" >Home</a> </li>
                 <li> <a href="/load" >Load Game</a> </li>
                 <li> <a href="/svg_test">Play Game</a>  </a> </li>
+                <li> <a href="/statistics">Statistics</a>  </a> </li>
             </ul>
-
-
-        </div>
-    </nav>
+        </nav>
+    </div>  
 
 
     <div class="container-fluid">
@@ -113,18 +132,40 @@
 
 
 
-
+    <br>
     <div class="container-fluid">
         <div class="row" >
-            <div class="col-md-4" >
-                <p> Número de partidas guardadas: {{numb_games}}  </p>
+            <div class="col-xs-8" >
+                <h1 class="section-title">About</h1>
+                <br>
+                <h3 class="section-subtitle">Previous Work</h3>
+                <p>The present web page is the continuation of the previous chess project. That project focused on creating a program capable of playing a match of chess; from this point on we will refer to it as the "chess engine". The chess engine incorporated five machine players and a human interface. Depending on the version of the machine player, the engine would consider different variables to decide the optimal play. The most advanced version of the machine player incorporates a Mini-Max algorithm. The mini-max algorithm lets the machine player to "see" what the oponent will do and react to its actions.</p>
+                <br>
+                <h3 class="section-subtitle">Chess Website</h3>
+                <p>The goal for the second part of the project was to create a web page capable of hosting the chess engine. The web page includes the following functionalities:  </p>
+                <li>A flask application that will host the web page and control the flow of the chess game</li>
+                <li>A connection to MySQL and MongoDB</li>
+                <li>Web scrapping to obtain news related to chess</li>
+                <li>Graphics to show information about the games played</li>
+                <br>
+                <p>The next image contains a graphical representation of the different pieces of code that work together to operate the web page. Also, it shows how the information travels between programs.</p>
+                <img src="https://i.ibb.co/bKNhHsb/arqui-resize.jpg" alt="Arquitectura" class="arqui" >
+            </div>
 
+            <div class="col-xs-4" id="quick-stats" >
+                <h1 class="section-title"  >Quick Statistics</h1>
+                <br>
+                <p> Saved games: {{numb_games}}  </p>
+                <br>
             </div>
 
         </div>
     </div>
 
-    <p>Main Page</p>
+    <div class="footer">
+        <h4 style="margin-bottom:0px;padding-bottom: 15px;padding-top: 15px;margin-top: 0px;" > © Rulo & Company 2019. All rights reserved. </h4>
+    </div>
+
 
 
     <script src="{{ url_for('static', filename='js/index_js.js') }}"></script>

@@ -3,14 +3,32 @@ import time
 import random
 import pandas as pd
 
+from sqlalchemy import create_engine
+import pymysql
+pymysql.install_as_MySQLdb()
+
 from IPython.display import display, HTML, clear_output, Image
 
+engine = create_engine ("mysql://root:Aa1$0110m@localhost/chess_db")
+
+#Variable global para guardar
 global bd
 bd = None
 
+#Variable global para minimax
 global board_stop
 
+#Variable global que guarda el tablero actual
 global board
+
+#Variable global que guarda posición eje x destino
+global x_axis
+
+#Variable global que guarda posición eje y destino
+global y_axis
+
+#Variable global que guarda total movimientos analizados
+global mov_len
 
 
 def who(player):
@@ -117,6 +135,9 @@ def jugador_humano(board, color, depth):
 
 
 def jugador_v5(board,color_jugador,depth):
+
+    global mov_len
+    mov_len = 0
     
     #Lista de mis movimientos legales (jugador en turno)
     l1= list(board.legal_moves)
@@ -142,6 +163,7 @@ def jugador_v5(board,color_jugador,depth):
             #Obtengo mi puntaje, es poss si juego bien y neg si juego mal. Por lo tanto busco el max
             temp_score = analisis_v4(temp_board,m1,temp_board.turn)
             best_score = max(temp_score,best_score)
+            mov_len +=1
 
             if( best_score == temp_score ):
                 best_move=m1
@@ -171,6 +193,7 @@ def jugador_v5(board,color_jugador,depth):
                 temp_score = analisis_v4(temp_board_2,m2,temp_board_2.turn)
                 best_score = max(temp_score,best_score)
                 #bd = bd.append( {"Best_Score":best_score} , ignore_index=True )
+                mov_len +=1
             
             m1.score=best_score
             
@@ -204,6 +227,7 @@ def jugador_v5(board,color_jugador,depth):
                     temp_board_3 = temp_board_2.copy()
                     temp_score_3 = analisis_v4( temp_board_3 , m3 , temp_board_3.turn )
                     bs_m3 = max( temp_score_3 , bs_m3 )
+                    mov_len +=1
                 
                 temp_score_2 = bs_m3
                 bs_m2 = min( bs_m2, temp_score_2 )
@@ -251,6 +275,8 @@ def jugador_v5(board,color_jugador,depth):
 
                         bs_m3=-99999
                         for m3 in l3:
+
+                            mov_len +=1
 
                             if beta<=alpha:
                                 c+=1
@@ -563,6 +589,8 @@ def jugador_v4(board,color_jugador,depth):
        
     moves.sort(key=lambda move: move.score, reverse=True)
     #print(str(move.score))
+    global mov_len
+    mov_len = len(moves)
     
     return moves[0].uci()
 
@@ -717,6 +745,8 @@ def jugador_v3(board,color,depth):
        
     moves.sort(key=lambda move: move.score, reverse=True)
     #print(str(move.score))
+    global mov_len
+    mov_len = len(moves)
     
     return moves[0].uci()
 
@@ -753,12 +783,17 @@ def jugador_v2(board, color, depth):
         move.score = analisis_v2(temp_board,move,board.turn)
        
     moves.sort(key=lambda move: move.score, reverse=True)
+
+    global mov_len
+    mov_len = len(moves)
     
     return moves[0].uci()
 
 
 def jugador_v1(board,color,depth):
     move = random.choice(list(board.legal_moves))
+    global mov_len
+    mov_len = len(list(board.legal_moves))
     return move.uci()
 
 
@@ -770,16 +805,12 @@ def boardSVGRepr(board):
 def play_game(player1, player2, visual="svg", pause=0.5, depth=0):
     
     global bd
-    
     global t_depth
-
     global board_stop
-    
     
     t_depth=0
     
     bd = None
-    
     bd = pd.DataFrame(columns=["Turn","Depth","Player","Move","FEN","Score_Tot","Score_Mov","Score_Tablero","Score_regreso","Score_Is_Check",
                            "Score_Check_Mate","Score_Is_Attacking","Score_Is_Castling","Score_Is_Attacked","Score_Estoy_Jaque",
                            "Score_Late_Move","Score_Early_Move","Score_Evitar_Empate","Score_Buscar_Empate","Move_Ant","Pieza",
@@ -829,7 +860,7 @@ def play_game(player1, player2, visual="svg", pause=0.5, depth=0):
         
     
     #bd.sort_values(by=["Turn","Score_Tot"], ascending=[True,False], inplace=True)
-    bd.to_csv("BD_Movimientos.csv",encoding="utf-8", index=False, header=True)
+    #bd.to_csv("BD_Movimientos.csv",encoding="utf-8", index=False, header=True)
     
     return (result, msg, board)
 
@@ -880,19 +911,604 @@ def get_uci(text):
     print("En get_move")
     return uci
 
-
-def process_play(uci):
+def process_play(uci,player_type,depth):
     global board
-    print("En process_play")
+    global mov_len
     board.push_uci(uci)
+
+    #Longitud del juego
+    game_len = len(board.move_stack)
+    #Si juego ya acabo
+    end_game = board.is_game_over(claim_draw=True)
+
+    #Si es jugador humano considelo la long de movs analizados igual a cero
+    if player_type=="H":
+        mov_len=0
+
+    #Identifico ganador y/o forma en la que acabó el juego
+    msg=""
+    result = ""
+    if board.is_checkmate():
+        msg = "checkmate"
+        result = who( not board.turn)
+    elif board.is_stalemate():
+        msg = "stalemate"
+        result = "Empate"
+    elif board.is_fivefold_repetition():
+        msg = "repetition"
+        result = "Empate"
+    elif board.is_insufficient_material():
+        msg = "insufficient_material"
+        result = "Empate"
+    elif board.can_claim_draw():
+        msg = "claim"
+        result = "Empate"
+
+    #Inserto información en la BD de MySQL
+    query = "insert into plays values (id,"+str(mov_len)+","  \
+        + str(end_game) +","+ str(game_len)+","+"0,0,"+"'"    \
+        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg + "');"
+    engine.execute(query)
+
+    #Regreso información a main_chess
     svg = boardSVGRepr(board)
-    return [svg, not board.is_game_over(claim_draw=True)]
+
+    if board.is_game_over:
+        return [svg, not board.is_game_over(claim_draw=True) , game_len , msg, result ]
+    else:
+        return [svg, not board.is_game_over(claim_draw=True) , game_len ]
 
 
 def fen_representation(board):
     return board.fen()
 
 
+def generateDatabase():
+    
+    #Obtengo el tablero actual del juego
+    global board
+
+    for i in range(98):
+        
+        d1=0
+        d2=0  
+
+        ###########################################################################
+        #############                         1                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        print("1.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v1(board,turn,d2),"M1",d2 )[1]
+        # print("5.2")
+
+        ###########################################################################
+        #############                         2                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        print("2.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v2(board,turn,d2),"M2",d2 )[1]
+        # print("5.2")
+
+
+        ###########################################################################
+        #############                         3                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        print("3.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v3(board,turn,d2),"M3",d2 )[1]
+        # print("5.2")
+
+
+        ###########################################################################
+        #############                         4                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        print("4.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v4(board,turn,d2),"M4",d2 )[1]
+        # print("5.2")
+
+
+        ###########################################################################
+        #############                        5.0                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        print("5.0.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,d2),"M5",d2 )[1]
+        # print("5.2")
+
+
+        ###########################################################################
+        #############                        5.1                       #############
+        ###########################################################################
+        print(i)
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.1")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.2")
+
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.3")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.4")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.5.0")
+        
+        initialize_game()
+        continues=True
+        while continues==True:
+            turn = global_turn()
+            if turn==True:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+            else:
+                continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        print("5.1.5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        # print("5.2")
+
+
+        ###########################################################################
+        #############                        5.2                       #############
+        ###########################################################################
+        
+        
+        # print(i)
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v1(board,turn,d1),"M1",d1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v2(board,turn,d1),"M2",d1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("2")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v3(board,turn,d1),"M3",d1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("3")
+        
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v4(board,turn,d1),"M4",d1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("4")
+        
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,d1),"M5",d1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("5.0")
+        
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,1),"M5",1 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("5.1")
+
+        # initialize_game()
+        # continues=True
+        # while continues==True:
+        #     turn = global_turn()
+        #     if turn==True:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        #     else:
+        #         continues = process_play( jugador_v5(board,turn,2),"M5",2 )[1]
+        # print("5.2")
+        # */
+    
+    
+    
+    
+    
+    
+    
+
+
+
+#generateDatabase()
 
 
 
