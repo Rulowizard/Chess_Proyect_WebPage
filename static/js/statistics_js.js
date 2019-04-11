@@ -161,6 +161,7 @@ function drawBarWinner(data=bar_datos){
 
 
 function drawHistogramPosEvaluated(data=datos){
+    Console.log("hOLA")
     var valor = getSelDepth()
     var player = getSelPlayer()
 
