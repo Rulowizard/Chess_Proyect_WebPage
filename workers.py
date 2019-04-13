@@ -68,15 +68,6 @@ wb_other = pd.DataFrame({"a":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],
                          "f":[1.0,2.0,3.0,3.0,3.0,3.0,2.0,1.0],
                          "g":[1.0,2.0,2.0,2.0,2.0,2.0,2.0,1.0],
                          "h":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]})
-
-
-#Diccionario para traducir letra a indice de la columna en el DF
-col_dict = {"a":0,"b":1,"c":2,"d":3,"e":4,"f":5,"g":6,"h":7}
-
-#Diccionario para los valores de las piezas
-dict_piezes_value ={"Pawn":10,"Bishop":30,"Knight":30,"Rook":50,"Queen":90,"King":0}
-
-dict_piezes_short_value = {"P":10,"B":30,"N":30,"R":50,"Q":90,"K":0}
   
 
 
@@ -90,78 +81,11 @@ def work_log(work_data):
     else:
         return work_data[1]**4
 
-def jugador_m(info):
-    board=info[1]
-    color_jugador=info[2]
-    depth = info[3]
-    move = info[0]
-    board.push(move)
-    value =  minimax(depth-1,board,-10000,10000, not True, move, color_jugador ) 
-
-    return [move,value]
-
-
-
-
-def minimax ( depth , board , alpha , beta , is_maximizing, move, color_jugador ):
-    if ( depth==0 ):
-        #analisis_v5(board,move,player_color):
-        board.pop()
-        return analisis_v5( board , move, board.turn , color_jugador )
-    
-    possibleMoves = list(board.legal_moves)
-    
-    global dict_piezes_short_value
-
-    ###############Ordenar usando valor de las peizas
-    lista_ord=[]
-    list_tupple=[]
-
-    for move in possibleMoves:
-        move_str = str(move)
-        move_org = move_str[0]+move_str[1]
-        pieza_org = str( board.piece_at( chess.SQUARES[chess.SQUARE_NAMES.index(move_org)] )).upper()
-        tupple = [move, dict_piezes_short_value[pieza_org]]
-        list_tupple.append(tupple)
-
-    list_tupple.sort( reverse=True , key = lambda x:x[1])
-    for tup in list_tupple:
-        lista_ord.append( tup[0] )
-
-    possibleMoves = lista_ord
-    #################################################
-    
-    if(is_maximizing):
-        bestMove = -99999
-        
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = max( bestMove , minimax(depth-1 , board , alpha , beta , not is_maximizing , move, color_jugador) )
-            board.pop()
-            alpha = max( alpha , bestMove )
-            if beta <= alpha:
-                return bestMove
-        return bestMove
-    else:
-        bestMove = 99999
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = min( bestMove , minimax( depth-1, board, alpha,beta, not is_maximizing , move, color_jugador ) )
-            board.pop()
-            beta = min(beta, bestMove)
-            if(beta<=alpha):
-                return bestMove
-        return bestMove
-
-
 def analisis_v5(board,move,player_color, original_player_color):
     
     #Esta versión regresa positivo si juega blanco, negativo si juega negro
     
     ############################################ General ############################################
-    
     
     #Puntaje inicial
     score= 0
@@ -170,10 +94,10 @@ def analisis_v5(board,move,player_color, original_player_color):
     proporcion_perder_pieza = 0.7
     
     #Diccionario para traducir letra a indice de la columna en el DF
-    global col_dict 
+    col_dict = {"a":0,"b":1,"c":2,"d":3,"e":4,"f":5,"g":6,"h":7}
     
     #Diccionario para los valores de las piezas
-    global dict_piezes_value 
+    dict_piezes_value ={"Pawn":10,"Bishop":30,"Knight":30,"Rook":50,"Queen":90,"King":0}
     
     #El movimiento viene formato UCI p.e.: "e3f3"
     # "e3" es el lugar de origen y "f3" es el destino
@@ -380,201 +304,29 @@ def analisis_v5(board,move,player_color, original_player_color):
     
     #def analisis_v5(board,move,player_color, original_player_color):
     
+#     if player_color == original_player_color:
+#         return score
+#     else:
+#         if score<0:
+#             return score
+#         else:
+#             return -score
+    
     if player_color == original_player_color:
         return score
     else:
-        if score<0:
-            return score
-        else:
-            return -score
+        return -score
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#####################################################################################
-#Prueba jugador ordenando movimientos según score usando analisis v5
-#Se usan con jugador v8
-
-def jugador_m1(info):
-    board=info[1]
-    color_jugador=info[2]
-    depth = info[3]
-    move = info[0]
-    board.push(move)
-    value =  minimax1(depth-1,board,-10000,10000, not True, move, color_jugador ) 
-
-    return [move,value]
-
-
-def minimax1 ( depth , board , alpha , beta , is_maximizing, move, color_jugador ):
+def minimax ( depth , board , alpha , beta , is_maximizing, move, color_jugador ):
     if ( depth==0 ):
+        #analisis_v5(board,move,player_color):
         board.pop()
         return analisis_v5( board , move, board.turn , color_jugador )
     
     possibleMoves = list(board.legal_moves)
     
-
-    ###############Ordenar usando valor del movimiento usando analisis_v5
-    lista_ord=[]
-    list_tupple=[]
-
-    for move in possibleMoves:
-        score = analisis_v5(board , move , board.turn , color_jugador)
-        tupple = [move, score ]
-        list_tupple.append(tupple)
-
-    list_tupple.sort( reverse=True , key = lambda x:x[1])
-    for tup in list_tupple:
-        lista_ord.append( tup[0] )
-
-    possibleMoves = lista_ord
-    #################################################
-    
-    if(is_maximizing):
-        bestMove = -99999
-        
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = max( bestMove , minimax(depth-1 , board , alpha , beta , not is_maximizing , move, color_jugador) )
-            board.pop()
-            alpha = max( alpha , bestMove )
-            if beta <= alpha:
-                return bestMove
-        return bestMove
-    else:
-        bestMove = 99999
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = min( bestMove , minimax( depth-1, board, alpha,beta, not is_maximizing , move, color_jugador ) )
-            board.pop()
-            beta = min(beta, bestMove)
-            if(beta<=alpha):
-                return bestMove
-
-        return bestMove
-
-
-
-
-
-
-
-
-
-
-
-
-
-#####################################################################################
-#Prueba jugador ordenando movimientos según score usando analisis v5
-#Se usan con jugador v9
-
-def jugador_m2(info):
-    bestMove = -99999
-    #bestMoveFinal = None
-    board=info[1]
-    board.push(info[0])
-    color_jugador=info[2]
-    depth = info[3]-1
-
-    possibleMoves = list( board.legal_moves )
-    
-    for x in possibleMoves:
-        move = x
-        board.push(move)
-        value = max( bestMove , minimax2(depth-1,board,-100000,100000, not True, move, color_jugador ) )
-        board.pop()
-            
-        if( value > bestMove ):
-            bestMove = value
-            bestMoveFinal = move
-
-    return [info[0],bestMove]
-
-
-
-def minimax2 ( depth , board , alpha , beta , is_maximizing, move, color_jugador ):
-    if ( depth==0 ):
-        board.pop()
-        return analisis_v5( board , move, board.turn , color_jugador )
-    
-    possibleMoves = list(board.legal_moves)
-    
-
-    ###############Ordenar usando valor del movimiento usando analisis_v5
-    lista_ord=[]
-    list_tupple=[]
-
-    for mov in possibleMoves:
-        score = analisis_v5(board , mov , board.turn , color_jugador)
-
-        tupple = [mov, score ]
-        list_tupple.append(tupple)
-
-    list_tupple.sort( reverse=True , key = lambda x:x[1])
-    for tup in list_tupple:
-        lista_ord.append( tup[0] )
-
-    possibleMoves = lista_ord
-    #################################################
-    
-    if(is_maximizing):
-        bestMove = -99999
-        
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = max( bestMove , minimax(depth-1 , board , alpha , beta , not is_maximizing , move, color_jugador) )
-            board.pop()
-            alpha = max( alpha , bestMove )
-            if beta <= alpha:
-                return bestMove
-        return bestMove
-    else:
-        bestMove = 99999
-        for x in possibleMoves:
-            move = x
-            board.push(move)
-            bestMove = min( bestMove , minimax( depth-1, board, alpha,beta, not is_maximizing , move, color_jugador ) )
-            board.pop()
-            beta = min(beta, bestMove)
-            if(beta<=alpha):
-                return bestMove
-        return bestMove
-    
-
-
-
-
-
-
-
-def jugador_v6( info):
-    board = info[0]
-    color_jugador = info[1]
-    depth = info[2]
-    
-    depth=depth+1
-    possibleMoves = list(board.legal_moves)
-    bestMove = -99999
-    bestMoveFinal = possibleMoves[0]
-    
+    ################ Inicia Ordenamiento
     lista_ord=[]
     list_tupple=[]
 
@@ -582,8 +334,8 @@ def jugador_v6( info):
         move_str = str(move)
         move_org = move_str[0]+move_str[1]
         pieza_org = str( board.piece_at( chess.SQUARES[chess.SQUARE_NAMES.index(move_org)] )).upper()
-        dict_piezes_short_value ={"P":10,"B":30,"N":30,"R":50,"Q":90,"K":0}
-        tupple = [move, dict_piezes_short_value[pieza_org]]
+        dict_piezes_value ={"P":10,"B":30,"N":30,"R":50,"Q":90,"K":0}
+        tupple = [move, dict_piezes_value[pieza_org]]
         list_tupple.append(tupple)
 
     list_tupple.sort( reverse=True , key = lambda x:x[1])
@@ -593,6 +345,66 @@ def jugador_v6( info):
     possibleMoves = lista_ord
     
     
+    ################ Finaliza Ordenamiento
+    
+    if(is_maximizing):
+        bestMove = -99999
+        
+        for x in possibleMoves:
+            move = x
+            board.push(move)
+            bestMove = max( bestMove , minimax(depth-1 , board , alpha , beta , not is_maximizing , move, color_jugador) )
+            board.pop()
+            alpha = max( alpha , bestMove )
+            if beta <= alpha:
+                return bestMove
+        return bestMove
+    else:
+        bestMove = 99999
+        for x in possibleMoves:
+            move = x
+            board.push(move)
+            bestMove = min( bestMove , minimax( depth-1, board, alpha,beta, not is_maximizing , move, color_jugador ) )
+            board.pop()
+            beta = min(beta, bestMove)
+            if(beta<=alpha):
+                return bestMove
+        return bestMove
+
+
+
+
+
+def jugador_mp( info):
+
+    board = info[0]
+    board.push(info[1])
+    color_jugador = board.turn
+    depth = info[2]-1
+    
+    possibleMoves = list(board.legal_moves)
+    bestMove = -99999
+    bestMoveFinal = possibleMoves[0]
+    
+    ################ Inicia Ordenamiento
+    lista_ord=[]
+    list_tupple=[]
+
+    for move in possibleMoves:
+        move_str = str(move)
+        move_org = move_str[0]+move_str[1]
+        pieza_org = str( board.piece_at( chess.SQUARES[chess.SQUARE_NAMES.index(move_org)] )).upper()
+        dict_piezes_value ={"P":10,"B":30,"N":30,"R":50,"Q":90,"K":0}
+        tupple = [move, dict_piezes_value[pieza_org]]
+        list_tupple.append(tupple)
+
+    list_tupple.sort( reverse=True , key = lambda x:x[1])
+    
+    for tup in list_tupple:
+        lista_ord.append( tup[0] )
+
+    possibleMoves = lista_ord
+    ################ Finaliza Ordenamiento
     
     for x in possibleMoves:
         move = x
@@ -604,12 +416,7 @@ def jugador_v6( info):
             bestMove = value
             bestMoveFinal = move
     
-    return bestMoveFinal.uci()
-
-
-
-
-
+    return [ info[1] , bestMove]
 
 
 

@@ -66,7 +66,6 @@ function getSelPlayer(){
 //Sección para las funciones que dibujan gráficas
 function drawBarWinner(data=bar_datos){
     var player = getSelPlayer()
-    console.log(data);
     var info_arr=[]
 
     switch(player){
@@ -161,7 +160,8 @@ function drawBarWinner(data=bar_datos){
 
 
 function drawHistogramPosEvaluated(data=datos){
-    Console.log("hOLA")
+    console.log("hOLA")
+    drawBarWinner()
     var valor = getSelDepth()
     var player = getSelPlayer()
 
@@ -241,7 +241,7 @@ function init(){
 
 
 d3.select("#selDepth").on("change", drawHistogramPosEvaluated );
-d3.select("#selPlayer").on("change", drawHistogramPosEvaluated ).on("change",drawBarWinner)
+d3.select("#selPlayer").on("change", drawHistogramPosEvaluated )
 
 //test();
 init();
