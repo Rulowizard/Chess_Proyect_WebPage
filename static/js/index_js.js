@@ -17,7 +17,7 @@ function initialize(){
         document.getElementById("img3").src=lista_src[2];
         document.getElementById("img4").src=lista_src[3];
         document.getElementById("img5").src=lista_src[4];
-        document.getElementById("img6").src=lista_src[5];
+        //document.getElementById("img6").src=lista_src[5];
 
         //Actualizo caption de las imagenes
         d3.select("#c1").text(lista_texto[0]);
@@ -25,7 +25,7 @@ function initialize(){
         d3.select("#c3").text(lista_texto[2]);
         d3.select("#c4").text(lista_texto[3]);
         d3.select("#c5").text(lista_texto[4]);
-        d3.select("#c6").text(lista_texto[5]);
+        //d3.select("#c6").text(lista_texto[5]);
 
         //Actualizo onClick
         d3.select("#c1").attr("href", lista_link[0] )
@@ -33,7 +33,7 @@ function initialize(){
         d3.select("#c3").attr("href", lista_link[2] )
         d3.select("#c4").attr("href", lista_link[3] )
         d3.select("#c5").attr("href", lista_link[4] )
-        d3.select("#c6").attr("href", lista_link[5] )
+        //d3.select("#c6").attr("href", lista_link[5] )
 
     });
 }

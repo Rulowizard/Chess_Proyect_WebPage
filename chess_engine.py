@@ -135,6 +135,7 @@ def jugador_humano(board, color, depth):
 
 
 def jugador_v5(board,color_jugador,depth):
+    
 
     global mov_len
     mov_len = 0
@@ -155,6 +156,7 @@ def jugador_v5(board,color_jugador,depth):
     t_depth=0
     #Mi turno
     if d==depth:
+        start = time.time()
         #Como es mi turno quiero maximizar el resultado
         best_score=-99999
         
@@ -168,7 +170,8 @@ def jugador_v5(board,color_jugador,depth):
             if( best_score == temp_score ):
                 best_move=m1
         
-        return best_move.uci()
+        end = time.time()
+        return [best_move.uci() , end-start , best_score]
     
     #Si juega bien con d=0
     
@@ -178,6 +181,7 @@ def jugador_v5(board,color_jugador,depth):
     t_depth=1
     #Turno del oponente
     if d==depth:
+        start = time.time()
         
         
         for m1 in l1:
@@ -198,13 +202,16 @@ def jugador_v5(board,color_jugador,depth):
             m1.score=best_score
             
         l1.sort(key=lambda m1: m1.score, reverse=False)
+
+        end = time.time()
         
-        return l1[0].uci()
+        return [ l1[0].uci() , end-start , l1[0].score]
     
     
     d=2
     t_depth=2
     if d==depth:
+        start = time.time()
         
         bs_m1=-99999
         for m1 in l1:
@@ -238,8 +245,8 @@ def jugador_v5(board,color_jugador,depth):
 
             
         l1.sort(key=lambda m1: m1.score, reverse=True)
-        
-        return l1[0].uci()
+        end = time.time()
+        return [ l1[0].uci() , end-start , l1[0].score]
     
     ########Pruning########
     board_stop = board._repr_svg_()
@@ -304,8 +311,10 @@ def jugador_v5(board,color_jugador,depth):
 
             
         l1.sort(key=lambda m1: m1.score, reverse=True)
+
+        end = time.time()
         
-        return l1[0].uci()
+        return [l1[0].uci(), end-start  ]
 
 
 def analisis_v4(board,move,player_color):
@@ -576,6 +585,7 @@ def analisis_v4(board,move,player_color):
 
 
 def jugador_v4(board,color_jugador,depth):
+    start = time.time()
     
     #Lista de posibles movimientos legales
     moves= list(board.legal_moves)
@@ -591,8 +601,10 @@ def jugador_v4(board,color_jugador,depth):
     #print(str(move.score))
     global mov_len
     mov_len = len(moves)
+
+    end = time.time()
     
-    return moves[0].uci()
+    return [moves[0].uci() , end-start , moves[0].score ]
 
 
 def analisis_v3(board,move,player_color):
@@ -732,6 +744,7 @@ def analisis_v3(board,move,player_color):
 
 #Version mejorada del jugador aleratorio
 def jugador_v3(board,color,depth):
+    start = time.time()
     
     #Lista de posibles movimientos
     moves= list(board.legal_moves)
@@ -747,8 +760,10 @@ def jugador_v3(board,color,depth):
     #print(str(move.score))
     global mov_len
     mov_len = len(moves)
+
+    end = time.time()
     
-    return moves[0].uci()
+    return [moves[0].uci() , end-start , moves[0].score]
 
 
 
@@ -771,6 +786,7 @@ def analisis_v2(board,move,player_color):
 
 #Version mejorada del jugador aleratorio
 def jugador_v2(board, color, depth):
+    start = time.time()
     
     #Lista de posibles movimientos
     moves= list(board.legal_moves)
@@ -786,15 +802,19 @@ def jugador_v2(board, color, depth):
 
     global mov_len
     mov_len = len(moves)
+
+    end = time.time()
     
-    return moves[0].uci()
+    return [moves[0].uci() , end-start , moves[0].score ]
 
 
 def jugador_v1(board,color,depth):
+    start = time.time()
     move = random.choice(list(board.legal_moves))
     global mov_len
     mov_len = len(list(board.legal_moves))
-    return move.uci()
+    end = time.time()
+    return [move.uci() , end-start , moves[0].score ]
 
 
 #El metodo original deberia de recibir un tablero
@@ -911,9 +931,38 @@ def get_uci(text):
     print("En get_move")
     return uci
 
-def process_play(uci,player_type,depth):
+def get_coordinates(uci):
+    dest = str(uci)[2:4]
+
+    if dest[0] == "a":
+        x_dest= 1
+    elif dest[0] == "b":
+        x_dest= 2
+    elif dest[0] == "c":
+        x_dest= 3
+    elif dest[0] == "d":
+        x_dest= 4
+    elif dest[0] == "e":
+        x_dest= 5
+    elif dest[0] == "f":
+        x_dest= 6
+    elif dest[0] == "g":
+        x_dest= 7
+    else:
+        x_dest= 8
+
+    y_dest=dest[1]
+
+    return [ x_dest , y_dest ]
+
+def process_play(info,player_type,depth, game_id):
     global board
     global mov_len
+    uci = info[0]
+    coordinates = get_coordinates(uci)
+    score = info[2]
+    exec_time= info[1]
+    print(exec_time)
     board.push_uci(uci)
 
     #Longitud del juego
@@ -959,9 +1008,10 @@ def process_play(uci,player_type,depth):
         result = "Empate"
 
     #Inserto información en la BD de MySQL
-    query = "insert into plays values (id,"+str(mov_len)+","  \
-        + str(end_game) +","+ str(game_len)+","+"0,0,"+"'"    \
-        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg + "');"
+    query = "insert into plays values (id,"+str(game_id)+","+str(mov_len)+","  \
+        + str(end_game) +","+ str(game_len)+","+str(coordinates[0])+","+str(coordinates[1])+","+"'"    \
+        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg +"',"+ str(round(exec_time,10))  \
+        +","+str(score) +");"
     engine.execute(query)
 
     #Regreso información a main_chess

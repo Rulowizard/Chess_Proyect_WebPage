@@ -31,6 +31,8 @@ global flagLoadGame
 flagLoadGame=False
 global globalFEN
 globalFEN=""
+global game_id
+game_id=""
 
 # Route to render index.html template using data from Mongo
 @app.route("/")
@@ -66,8 +68,10 @@ def saved_games():
 def load_game():
     global flagLoadGame
     global globalFEN
+    global game_id
     globalFEN = request.args.get("fen")
     flagLoadGame=True
+    game_id = request.args.get("game_id")
     print(globalFEN)
     return "OK"
 
@@ -91,19 +95,27 @@ def game():
 def initialize():
     global flagLoadGame
     global globalFEN
+    global game_id
 
     if  flagLoadGame==False:
         initialize_game()
-        text="Normal Initialize"
+        conn = engine.connect()
+        max_game_id = pd.read_sql("Select max(game_id) from plays", conn)
+        max_game_id = max_game_id.iloc[0][0]
+        if max_game_id is None:
+            max_game_id=-1
+        new_game_id= max_game_id+1
+        print(new_game_id)
     else:
         initialize_game_fen(globalFEN)
         flagLoadGame=False
         globalFEN=""
         text="FEN Initialize"
+        new_game_id = game_id
 
 
     print("Game initialized")
-    return text
+    return str(new_game_id)
 
 @app.route("/play",methods=["GET"]) 
 def play_game():
@@ -122,6 +134,8 @@ def save():
 
     #Recibo string que representa imagen svg
     svg = request.args.get("svg")
+    #Recibo game_id
+    game_id = request.args.get("game_id")
     #Obtengo tablero actual
     board = global_board()
     #Obtengo representacion FEN del tablero
@@ -132,7 +146,8 @@ def save():
     db.games.insert_one(
         {
             "svg":svg,
-            "fen":fen
+            "fen":fen,
+            "game_id":game_id
         }
     )
     
@@ -260,6 +275,7 @@ def player():
     print(player)
     #Profundidad
     depth = int( request.args.get("depth",0))
+    game_id = int(request.args.get("game_id"))
     print(depth)
     
     #Condicionales para saber quien atiende
@@ -273,24 +289,24 @@ def player():
 
     elif player =="M1":
         print("M1")
-        values =  process_play( jugador_v1(board,color,depth) , "M1",0 )
+        values =  process_play( jugador_v1(board,color,depth) , "M1",0, game_id )
         
 
     elif player =="M2":
         print("M2")
-        values =  process_play( jugador_v2(board,color,depth) , "M2",0 )
+        values =  process_play( jugador_v2(board,color,depth) , "M2",0, game_id )
     
     elif player =="M3":
         print("M3")
-        values =  process_play( jugador_v3(board,color,depth) , "M3",0 )
+        values =  process_play( jugador_v3(board,color,depth) , "M3",0 , game_id )
 
     elif player =="M4":
         print("M4")
-        values =  process_play( jugador_v4(board,color,depth) , "M4",0 )
+        values =  process_play( jugador_v4(board,color,depth) , "M4",0 , game_id )
 
     elif player =="M5":
         print("M5")
-        values =  process_play( jugador_v5(board,color,depth) , "M5", depth )
+        values =  process_play( jugador_v5(board,color,depth) , "M5", depth , game_id  )
     return jsonify(values)
 
 

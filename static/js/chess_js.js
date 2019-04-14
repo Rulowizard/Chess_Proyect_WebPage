@@ -15,6 +15,8 @@ var game_len=0;
 var msg="";
 //Variable que guarda el ganador de la partida
 var result="";
+//Variable que guarda el id del juego
+var game_id = "";
 
 
 
@@ -32,7 +34,8 @@ function initialize(){
   contenedor.selectAll("*").remove();
 
   $.get("initialize",function(data){
-    console.log(data)
+    game_id = parseInt(data)
+    console.log(game_id)
     handleSubmit()
   });
 
@@ -67,7 +70,7 @@ function game_stats(data){
 async function getInfo(player,depth){
   var info="";
 
-  info= await $.get("player",{player:player,depth:depth},function(data){
+  info= await $.get("player",{player:player,depth:depth,game_id:game_id},function(data){
     //Data[0] viene info sobre la imagen SVG
     //Data[1] es la variable bool que indica si continua el juego
     
@@ -330,7 +333,7 @@ function save(){
   //Obtengo svg
   var svg = document.getElementById("svg").innerHTML 
 
-  $.get("save",{svg:svg},function(data){
+  $.get("save",{svg:svg,game_id:game_id},function(data){
     console.log(data)
   })
 

@@ -13,7 +13,7 @@ function initialize(){
             console.log(data[i].fen.split(" "))
             var paneles = d3.select("#paneles").append("div").attr("class","panel panel-default")
             var body = paneles.append("div").attr("class","panel-body")
-                .attr("id","panel-body-"+String(i))
+                .attr("id","panel-body-"+String(i)+"-"+String(data[i].game_id))
             var rows = body.append("div").attr("class","row")
 
             //Sección para dibujar la imagen
@@ -62,6 +62,10 @@ function initialize(){
             var li2 = cols2.append("li").attr("class","p-li").text(prox_turno);
             var br2 = cols2.append("br").attr("class","p-br")
 
+            var p4 = cols2.append("p").attr("class","p-label").text("Id del juego:")
+            var li3 = cols2.append("li").attr("class","p-li").text(data[i].game_id)
+            var br3 = cols2.append("br").attr("class","p-br")
+
         }
 
         //Una vez cargada la página obtengo una lista de todos los paneles
@@ -81,8 +85,11 @@ function panelClick(){
 
     //Obtengo el FEN del panel sobre el cual se hizo click
     fen= globalFEN[ parseInt( this.id.split("-")[2]) ]
+    game_id = this.id.split("-",)[3]
+    console.log(this.id)
+    console.log(game_id)
 
-    $.get("load_game",{fen:fen},function(data){
+    $.get("load_game",{fen:fen,game_id:game_id},function(data){
         window.location.href = "/svg_test"
     });
 
