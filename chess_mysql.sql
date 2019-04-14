@@ -18,8 +18,8 @@ create table plays(
     depth int,
     winner varcharacter(10),
     end_game_mode varcharacter(22),
-    exec_time decimal(10,10),
-    score decimal(7,3),
+    exec_time decimal(10,6),
+    score decimal(9,3),
     primary key(id)
 );
 
@@ -34,10 +34,10 @@ Select sum(mov_len) from plays;
 -- DELETE FROM plays Where id>49272;
 
 -- ALTER TABLE plays ADD COLUMN game_id int AFTER id;
-ALTER TABLE plays ADD COLUMN score decimal(7,3) AFTER exec_time;
--- ALTER TABLE plays CHANGE exec_time exec_time decimal(10,10);
+-- ALTER TABLE plays ADD COLUMN score decimal(7,3) AFTER exec_time;
+-- ALTER TABLE plays CHANGE score score decimal(9,3);
 -- ALTER TABLE plays DROP COLUMN exec_time;
--- ALTER TABLE plays CHANGE x_axis x_dest int;
+-- ALTER TABLE plays CHANGE exec_time exec_time decimal(6,6);
 -- ALTER TABLE plays CHANGE y_axis y_dest int;
 
 Select mov_len from plays order by mov_len desc;

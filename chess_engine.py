@@ -166,6 +166,7 @@ def jugador_v5(board,color_jugador,depth):
             temp_score = analisis_v4(temp_board,m1,temp_board.turn)
             best_score = max(temp_score,best_score)
             mov_len +=1
+            print(mov_len)
 
             if( best_score == temp_score ):
                 best_move=m1
@@ -198,6 +199,7 @@ def jugador_v5(board,color_jugador,depth):
                 best_score = max(temp_score,best_score)
                 #bd = bd.append( {"Best_Score":best_score} , ignore_index=True )
                 mov_len +=1
+                print(mov_len)
             
             m1.score=best_score
             
@@ -235,6 +237,7 @@ def jugador_v5(board,color_jugador,depth):
                     temp_score_3 = analisis_v4( temp_board_3 , m3 , temp_board_3.turn )
                     bs_m3 = max( temp_score_3 , bs_m3 )
                     mov_len +=1
+                    print(mov_len) 
                 
                 temp_score_2 = bs_m3
                 bs_m2 = min( bs_m2, temp_score_2 )
@@ -814,7 +817,7 @@ def jugador_v1(board,color,depth):
     global mov_len
     mov_len = len(list(board.legal_moves))
     end = time.time()
-    return [move.uci() , end-start , moves[0].score ]
+    return [move.uci() , end-start , 1 ]
 
 
 #El metodo original deberia de recibir un tablero
@@ -1010,7 +1013,7 @@ def process_play(info,player_type,depth, game_id):
     #Inserto información en la BD de MySQL
     query = "insert into plays values (id,"+str(game_id)+","+str(mov_len)+","  \
         + str(end_game) +","+ str(game_len)+","+str(coordinates[0])+","+str(coordinates[1])+","+"'"    \
-        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg +"',"+ str(round(exec_time,10))  \
+        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg +"',"+ str(round(exec_time,6))  \
         +","+str(score) +");"
     engine.execute(query)
 
@@ -1018,9 +1021,9 @@ def process_play(info,player_type,depth, game_id):
     svg = boardSVGRepr(board)
 
     if board.is_game_over:
-        return [svg, not board.is_game_over(claim_draw=True) , game_len , msg, result ]
+        return [svg,not board.is_game_over(claim_draw=True),game_len,score,exec_time,mov_len,msg,result]
     else:
-        return [svg, not board.is_game_over(claim_draw=True) , game_len ]
+        return [svg,not board.is_game_over(claim_draw=True),game_len,score,exec_time,mov_len ]
 
 
 def fen_representation(board):

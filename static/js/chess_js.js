@@ -56,9 +56,14 @@ function game_stats(data){
   //Agregar texto
   var p1 = contenedor.append("p").attr("class","stat-text").text("Turno: "+data[2] )
   var p2 = contenedor.append("p").attr("class","stat-text").text("Mueve: " + String( (color==true) ? "Blanco" :"Negro") )
-  if(data[3]!=""){
-    var p3= contenedor.append("p").attr("class","stat-text").text("Resultado: " + data[3] )
-    var p4= contenedor.append("p").attr("class","stat-text").text("Ganador: " +data[4])
+  var p5 = contenedor.append("p").attr("class","stat-text").text("Tiempo de Procesamiento: " + String(data[4]).substring(0,10) )
+  var p6 = contenedor.append("p").attr("class","stat-text").text("Score: " + String(data[3]).substring(0,9) )
+  var p7 = contenedor.append("p").attr("class","stat-text").text("Posiciones Analizadas: " + String(data[5]) )
+
+
+  if(data[6]!=""){
+    var p3= contenedor.append("p").attr("class","stat-text").text("Resultado: " + data[6] )
+    var p4= contenedor.append("p").attr("class","stat-text").text("Ganador: " +data[7])
   }
 
 }
