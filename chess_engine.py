@@ -924,14 +924,15 @@ def call_jugador_v4():
 
 def get_uci(text):
     uci = text
-    if uci and uci[0] == "q":
-        raise KeyboardInterrupt()
-    try:
-        chess.Move.from_uci(uci)
-    except:
-        uci = None
 
-    print("En get_move")
+    # if uci and uci[0] == "q":
+    #     raise KeyboardInterrupt()
+    # try:
+    #     chess.Move.from_uci(uci)
+    # except:
+    #     uci = None
+
+    print(chess.Move.from_uci(uci))
     return uci
 
 def get_coordinates(uci):
@@ -961,10 +962,17 @@ def get_coordinates(uci):
 def process_play(info,player_type,depth, game_id):
     global board
     global mov_len
-    uci = info[0]
+
+    if player_type=="H":
+        uci = info
+        score = 0
+        exec_time = 0
+    else:
+        uci = info[0]
+        exec_time= info[1]
+        score = info[2]
+    
     coordinates = get_coordinates(uci)
-    score = info[2]
-    exec_time= info[1]
     print(exec_time)
     board.push_uci(uci)
 

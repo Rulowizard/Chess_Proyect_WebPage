@@ -19,8 +19,6 @@ var result="";
 var game_id = "";
 
 
-
-
 //Inicializa en el lado del servidor un tablero nuevo
 //No regresa el tablero pero si manda mensaje
 function initialize(){
@@ -60,12 +58,10 @@ function game_stats(data){
   var p6 = contenedor.append("p").attr("class","stat-text").text("Score: " + String(data[3]).substring(0,9) )
   var p7 = contenedor.append("p").attr("class","stat-text").text("Posiciones Analizadas: " + String(data[5]) )
 
-
   if(data[6]!=""){
     var p3= contenedor.append("p").attr("class","stat-text").text("Resultado: " + data[6] )
     var p4= contenedor.append("p").attr("class","stat-text").text("Ganador: " +data[7])
   }
-
 }
 
 
@@ -85,8 +81,6 @@ async function getInfo(player,depth){
     var img_svg=obj_svg[0]
 
     game_stats(data);
-
-
 
     return {cont:data[1],img:data[0]};
   }).then(d => d);
@@ -140,7 +134,6 @@ function serverSelPlayer(selValue){
     default:
       player="M5"
   }
-
   return player;
 
 }
@@ -163,18 +156,18 @@ function transformCoordinates(coord){
   y=coord[1];
 
   //Click está dentro del rango permitido
-  if(  (x>=20 && x<= 380) && ( y>=20 && y<=380 ) ){
+  if(  (x>=1 && x<= 450) && ( y>=1 && y<=450 ) ){
     //Inicializo variables de salida
     var c1="" //X
     var c2="" //Y
 
     //Normalizo para quitar desfase
-    x=x-20;
-    y=y-20;
+    //x=x-20;
+    //y=y-20;
 
     //Obtengo el número del cuadrante del tablero
-    cuadX = Math.ceil( x/45 );
-    cuadY = Math.ceil( y/45 );
+    cuadX = Math.ceil( x/56.25 );
+    cuadY = Math.ceil( y/56.25 );
 
     //transformar cuadX a string
     switch(cuadX){
@@ -240,6 +233,7 @@ function transformCoordinates(coord){
     //Elimino duplicados
     clicks = [...new Set(clicks)];
 
+    game()
 
   } else{
     console.log("Nok");
@@ -247,30 +241,24 @@ function transformCoordinates(coord){
 }
 
 async function getInfoHuman(click){
-  var info="";
-  console.log(click)
   console.log("Entro getInfoHuman")
+  var info="";
   var move= click[0]+click[1]
-  info= await $.get("player",{player:"Humano",clicks:move}
-    // //Data[0] viene info sobre la imagen SVG
-    // //Data[1] es la variable bool que indica si continua el juego
-    // //Convierte el string en objeto
-    // var obj_svg=$(data[0])
-    // //Acceder a la info de la imagen
-    // var img_svg=obj_svg[0]
-
-    //return {cont:data[1],img:data[0]};
-  ).then(data => {
+  console.log(move)
+  info= await $.get("player",{player:"Humano",clicks:move,depth:0,game_id:game_id },function(data){
     //Data[0] viene info sobre la imagen SVG
     //Data[1] es la variable bool que indica si continua el juego
+    
     //Convierte el string en objeto
     var obj_svg=$(data[0])
     //Acceder a la info de la imagen
     var img_svg=obj_svg[0]
 
+    game_stats(data);
+
     return {cont:data[1],img:data[0]};
-  });
-  console.log(info)
+  }).then(d =>d);
+
   return info;
 }
 
@@ -280,23 +268,53 @@ function getCoordinates(){
   var pageX = d3.event.pageX;
   var pageY = d3.event.pageY;
 
-  d3.select("#coordx").text(pageX- this.offsetLeft )
-  d3.select("#coordy").text(pageY- this.offsetTop)
+  var row_svg = document.getElementById("row-svg")
+  var style_row = row_svg.currentStyle || window.getComputedStyle(row_svg)
+
+  var col_svg = document.getElementById("col-svg")
+  var style_col = col_svg.currentStyle || window.getComputedStyle(col_svg)
+
+  x_norm = pageX - 40- Math.ceil(parseInt(style_col.marginLeft.slice(0,-2)))
+  y_norm = pageY - 507
+  
+  /*
+  console.log("------------------------------")
+
+  console.log("Page X(Left): "+String(pageX )  )
+  console.log("Col margin left " + String( Math.ceil(parseInt(style_col.marginLeft.slice(0,-2)))  ) )
+  console.log("X normalized: " + String( x_norm )  )
+  console.log("Cudrante X: " + String( Math.ceil( x_norm /56.25)  ) )
+
+  console.log("---")
+  console.log("Page Y(Top): "+String(pageY)  )
+  console.log("This Offset Top: "+String(this.offsetTop)  )
+  console.log("Col margin top " +  String(  style_col.marginTop ) )
+
+
+  //console.log("Row margin left " + style_row.marginLeft )
+  //console.log("Offsetleft row: " + String(row_svg.offsetLeft) )
+  //console.log("Row margin+border+padding: " + String( row_svg.marginLeft) )
+  //console.log("Offset left col: " +String(col_svg.offsetLeft) )
+  //console.log("Page Y(Top): "+String(pageY)  )
+  //console.log("This Offset Left: "+String(this.offsetLeft )  )
+  //console.log("This Offset Top: "+String(this.offsetTop)  )
+
+  console.log("------------------------------")
+  */
 
   //LINEA DE PRUEBA
-  transformCoordinates( [pageX-this.offsetLeft , pageY-this.offsetTop ]  );
+  transformCoordinates( [x_norm , y_norm ]  );
 }
 
 /////////////////////////////////////////////////////////////
 async function game(){
-  while (continuar==true){
 
-    //Extrae el valor de la lista de seleccion del jugador en turno
-    var tipo_jugador=getSelPlayer()
 
-    console.log(tipo_jugador, tipo_jugador=="Humano");
+  //Extrae el valor de la lista de seleccion del jugador en turno
+  var tipo_jugador=getSelPlayer()
 
-    if ( tipo_jugador=="Humano" ){   
+  if (continuar == true){
+    if ( tipo_jugador=="Humano" && clicks.length==2  ){   
       var data = await getInfoHuman(clicks)
       console.log("----")
       console.log(data)
@@ -304,6 +322,7 @@ async function game(){
       continuar = data[1];
       color = !color;
       clicks=[];
+      game();
 
     } else{
       var tipo_jug_serv = serverSelPlayer(tipo_jugador)
@@ -311,13 +330,12 @@ async function game(){
       dibujarSVG(data[0]);
       continuar = data[1];
       color = !color;
-
+      game();
     }
   }
 }
 
 //Obtener tablero SVG actual
-// Submit Button handler
 function handleSubmit() {
   console.log("handleSubmit");
   $.get("game",function(data){
@@ -341,7 +359,6 @@ function save(){
   $.get("save",{svg:svg,game_id:game_id},function(data){
     console.log(data)
   })
-
   ////////////////////////////////////
   // Modificar HTML para mostrar mensaje que se guardó el juego de forma exitosa
   //Seleccionar el contenedor
@@ -351,7 +368,6 @@ function save(){
   //Agregar titulo
   var h2s = contenedor.append("h1").attr("class","titulo")
   h2s.text("Successfully Saved Game")
-
 }
 
 initialize();

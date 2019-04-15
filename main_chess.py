@@ -241,7 +241,7 @@ def quickStats():
     conn = engine.connect()
     df = pd.read_sql("Select * FROM plays",conn)
     #Depuro DF
-    df = df.drop( ["x_axis","y_axis"] , axis=1)
+    df = df.drop( ["x_dest","y_dest"] , axis=1)
     #DF que sólo contiene la info de las partidas acabadas
     tabla_fin_partida = df.loc[ df["winner"] != ""  ]
     total_movimientos= df["id"].max()
@@ -282,8 +282,7 @@ def player():
     if player=="Humano":
         print("Humano")
         move = request.args.get("clicks")
-        uci = get_uci(move)
-        values = process_play( uci , "H",0 )
+        values = process_play( move , "H",0, game_id )
         print(".....")
 
 
