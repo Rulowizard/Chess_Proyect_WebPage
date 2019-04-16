@@ -2,6 +2,7 @@ from flask import (Flask, render_template, redirect, Markup, request ,
     Response, jsonify,url_for)
 import pymongo, json
 import chess_scrape
+import chess
 
 from sqlalchemy import create_engine
 import pymysql
@@ -13,7 +14,7 @@ engine = create_engine ("mysql://root:Aa1$0110m@localhost/chess_db")
 
 from chess_engine import ( boardSVGRepr, initialize_game, 
     call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
-    jugador_v3, jugador_v4, jugador_v5, get_uci, fen_representation, initialize_game_fen)
+    jugador_v3, jugador_v4, jugador_v5, get_move, fen_representation, initialize_game_fen)
 
 
 # Create an instance of Flask
@@ -86,10 +87,19 @@ def statistics():
 
 @app.route("/game", methods=["GET"])
 def game():
-      
     print("game")  
     #return Markup(boardSVGRepr(global_board()))
     return jsonify( boardSVGRepr(global_board())) 
+
+@app.route("/sel_piece", methods=["GET"])
+def sel_piece():
+    x = int( request.args.get("x") )
+    y = int( request.args.get("y") )
+    arrows = [(chess.square(x,y), (chess.square(x,y)) )]
+    temp_board = chess.svg.board(board= global_board(), arrows = arrows )
+    return jsonify( boardSVGRepr( temp_board ) )
+
+
 
 @app.route("/initialize", methods=["GET"])
 def initialize():
@@ -281,7 +291,11 @@ def player():
     #Condicionales para saber quien atiende
     if player=="Humano":
         print("Humano")
-        move = request.args.get("clicks")
+        move = get_move( request.args.get("clicks") )
+
+        if move == "Movimiento invalido":
+            return "Movimiento invalido"
+
         values = process_play( move , "H",0, game_id )
         print(".....")
 

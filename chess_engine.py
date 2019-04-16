@@ -112,17 +112,14 @@ wb_other = pd.DataFrame({"a":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],
                          "h":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]})
 
 
-def get_move(prompt):
-    uci = input(prompt)
-    if uci and uci[0] == "q":
-        raise KeyboardInterrupt()
-    try:
-        chess.Move.from_uci(uci)
-    except:
-        uci = None
-
-    print("En get_move")
-    return uci
+def get_move(text):
+    uci = text
+    global board
+    legal_moves_uci =[move.uci() for move in board.legal_moves ]
+    if uci in legal_moves_uci:
+        return uci
+    else:
+        return "Movimiento invalido"
 
 def jugador_humano(board, color, depth):
     #display(board)
@@ -922,18 +919,18 @@ def call_jugador_v4():
     return [ svg  , not board.is_game_over(claim_draw=True) ]
 
 
-def get_uci(text):
-    uci = text
+# def get_uci(text):
+#     uci = text
 
-    # if uci and uci[0] == "q":
-    #     raise KeyboardInterrupt()
-    # try:
-    #     chess.Move.from_uci(uci)
-    # except:
-    #     uci = None
+#     # if uci and uci[0] == "q":
+#     #     raise KeyboardInterrupt()
+#     # try:
+#     #     chess.Move.from_uci(uci)
+#     # except:
+#     #     uci = None
 
-    print(chess.Move.from_uci(uci))
-    return uci
+#     print(chess.Move.from_uci(uci))
+#     return uci
 
 def get_coordinates(uci):
     dest = str(uci)[2:4]

@@ -225,6 +225,7 @@ function transformCoordinates(coord){
         break;
     }
 
+    //Concateno las dos partes del movimiento
     resultado =c1+String(c2);
 
     //Agrego el recuadro en el arreglo
@@ -232,6 +233,17 @@ function transformCoordinates(coord){
 
     //Elimino duplicados
     clicks = [...new Set(clicks)];
+
+    if( clicks.length==1  ){
+      $.get("sel_piece", {x:cuadX-1,y:c2-1} , function(data){
+        //Convierte el string en objeto
+        var obj_svg=$(data)
+        //Acceder a la info de la imagen
+        var img_svg=obj_svg[0]
+        console.log(obj_svg)
+        dibujarSVG(img_svg)
+      });
+    }
 
     game()
 
@@ -248,8 +260,15 @@ async function getInfoHuman(click){
   info= await $.get("player",{player:"Humano",clicks:move,depth:0,game_id:game_id },function(data){
     //Data[0] viene info sobre la imagen SVG
     //Data[1] es la variable bool que indica si continua el juego
-    
-    //Convierte el string en objeto
+
+    console.log("Data: " + String(data) )
+
+    if (data == "Movimiento invalido" ){
+      console.log("Movimiento invalido getInfoHuman")
+      return "Movimiento invalido"
+    }else{
+
+          //Convierte el string en objeto
     var obj_svg=$(data[0])
     //Acceder a la info de la imagen
     var img_svg=obj_svg[0]
@@ -257,6 +276,10 @@ async function getInfoHuman(click){
     game_stats(data);
 
     return {cont:data[1],img:data[0]};
+
+    }
+    
+
   }).then(d =>d);
 
   return info;
@@ -314,16 +337,24 @@ async function game(){
   var tipo_jugador=getSelPlayer()
 
   if (continuar == true){
-    if ( tipo_jugador=="Humano" && clicks.length==2  ){   
-      var data = await getInfoHuman(clicks)
-      console.log("----")
-      console.log(data)
-      dibujarSVG(data[0]);
-      continuar = data[1];
-      color = !color;
-      clicks=[];
-      game();
+    if ( tipo_jugador=="Humano"  ){
+      if( clicks.length==2  ){
+        var data = await getInfoHuman(clicks)
 
+        //Checo si la información que extraje es valida
+        if ( data == "Movimiento invalido" ){
+          clicks=[];
+        }else{
+          console.log("----")
+          console.log(data)
+          dibujarSVG(data[0]);
+          continuar = data[1];
+          color = !color;
+          clicks=[];
+          game();
+        }
+
+      }   
     } else{
       var tipo_jug_serv = serverSelPlayer(tipo_jugador)
       var data = await getInfo(tipo_jug_serv, getSelDepth() )
