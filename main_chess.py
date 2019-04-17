@@ -271,6 +271,20 @@ def quickStats():
         mejor_jugador_name, int(mejor_jugador_score), peor_jugador_name, int(peor_jugador_score)  ]
     return jsonify( info  )
 
+@app.route("/render_pieces",methods=["GET"] )
+def render_pieces():
+    color = request.args.get("color")
+    print(f"El color recibido es: {color} ")
+    if color== "true" :
+        svg = [ chess.svg.piece(chess.Piece.from_symbol("Q")),chess.svg.piece(chess.Piece.from_symbol("R")),
+            chess.svg.piece(chess.Piece.from_symbol("N")),chess.svg.piece(chess.Piece.from_symbol("B"))]
+    else:
+        svg = [ chess.svg.piece(chess.Piece.from_symbol("q")),chess.svg.piece(chess.Piece.from_symbol("r")),
+            chess.svg.piece(chess.Piece.from_symbol("n")),chess.svg.piece(chess.Piece.from_symbol("b"))]
+
+    return jsonify(svg)
+
+
 
 @app.route("/player", methods=["GET"])
 def player():
@@ -295,6 +309,8 @@ def player():
 
         if move == "Movimiento invalido":
             return "Movimiento invalido"
+        elif move=="Promoción":
+            return "Promoción"
 
         values = process_play( move , "H",0, game_id )
         print(".....")

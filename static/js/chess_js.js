@@ -30,10 +30,15 @@ function initialize(){
   var contenedor = d3.select("#contenedor-text");
   //Quitar todos los elementos del contenedor
   contenedor.selectAll("*").remove();
+  var row = document.getElementById("row-render")
+  if (row != null){
+    console.log("Not Null")
+    d3.selectAll("#row-render").remove()
+  }
+  
 
   $.get("initialize",function(data){
     game_id = parseInt(data)
-    console.log(game_id)
     handleSubmit()
   });
 
@@ -41,7 +46,6 @@ function initialize(){
 
 //Modificar HTML para mostrar estadisticas basicas del juego
 function game_stats(data){
-  console.log(data)
   //Seleccionar el contenedor
   var contenedor = d3.select("#contenedor-text");
   //Quitar todos los elementos del contenedor
@@ -240,7 +244,6 @@ function transformCoordinates(coord){
         var obj_svg=$(data)
         //Acceder a la info de la imagen
         var img_svg=obj_svg[0]
-        console.log(obj_svg)
         dibujarSVG(img_svg)
       });
     }
@@ -255,20 +258,29 @@ function transformCoordinates(coord){
 async function getInfoHuman(click){
   console.log("Entro getInfoHuman")
   var info="";
-  var move= click[0]+click[1]
+
+  if( click.length>2 ){
+   var move = click[0]+click[1]+click[2]
+  } else {
+    var move= click[0]+click[1]
+  }
+
   console.log(move)
+
+  
   info= await $.get("player",{player:"Humano",clicks:move,depth:0,game_id:game_id },function(data){
     //Data[0] viene info sobre la imagen SVG
     //Data[1] es la variable bool que indica si continua el juego
 
-    console.log("Data: " + String(data) )
-
     if (data == "Movimiento invalido" ){
       console.log("Movimiento invalido getInfoHuman")
       return "Movimiento invalido"
+    } else if ( data == "Promoción" ){
+      console.log("Promoción")
+      return "Promoción"
     }else{
-
-          //Convierte el string en objeto
+    console.log("Correcto")
+    //Convierte el string en objeto
     var obj_svg=$(data[0])
     //Acceder a la info de la imagen
     var img_svg=obj_svg[0]
@@ -329,6 +341,78 @@ function getCoordinates(){
   transformCoordinates( [x_norm , y_norm ]  );
 }
 
+function renderClick(){
+  console.log("Render Click")
+  position = parseInt( this.id.split("-")[2] )
+  console.log(position)
+  switch(position){
+    case 0:
+      pieza = "q"
+      break;
+    case 1:
+      pieza = "r"
+      break;
+    case 2:
+      pieza = "n"
+      break;
+    default:
+      pieza = "b"
+      break;
+  }
+
+  /*
+  if (color == false){
+    pieza = pieza.toLowerCase()
+  }
+  */
+  
+  var row = document.getElementById("row-render")
+  row.innerHTML="";
+
+  clicks.push(pieza)
+  game()
+
+}
+
+async function renderPieces(color){
+  console.log("Entro renderPieces")
+  console.log("Color actual: " +String(color) )
+  var info="";
+  info= await $.get("render_pieces",{color:color },function(data){
+    //Data[0] viene info sobre la imagen SVG
+    //Data[1] es la variable bool que indica si continua el juego
+
+    var row = d3.select("#container-game-1").append("div").attr("class","row")
+      .attr("id","row-render")
+    
+    var container = row.append("div").attr("class","col-xs-4 col-xs-offset-2")
+
+      for ( i=0; i<data.length;i++ ){
+        var columna = container.append("div").attr("class", "col-xs-3")
+          .attr("id", "col-render-"+String(i) )
+        var div = columna.append("div").attr("class","svg-render")
+          .attr("id","svg-render-"+String(i))
+        var svg = document.getElementById("svg-render-"+String(i))
+        svg.innerHTML=""
+        img = $(data[i])
+        console.log(img)
+        svg.appendChild( img[0] )
+
+        var event_list= document.getElementById("col-render-"+String(i))
+        event_list.addEventListener("click",renderClick,false );
+
+      }
+    
+    var column
+
+
+  }).then(d =>d);
+
+  return info;
+}
+
+
+
 /////////////////////////////////////////////////////////////
 async function game(){
 
@@ -338,15 +422,15 @@ async function game(){
 
   if (continuar == true){
     if ( tipo_jugador=="Humano"  ){
-      if( clicks.length==2  ){
+      if( clicks.length>1){
         var data = await getInfoHuman(clicks)
 
         //Checo si la información que extraje es valida
         if ( data == "Movimiento invalido" ){
           clicks=[];
+        } else if (data == "Promoción") {
+          renderPieces(color);
         }else{
-          console.log("----")
-          console.log(data)
           dibujarSVG(data[0]);
           continuar = data[1];
           color = !color;
@@ -368,7 +452,6 @@ async function game(){
 
 //Obtener tablero SVG actual
 function handleSubmit() {
-  console.log("handleSubmit");
   $.get("game",function(data){
    dibujarSVG(data)
   });
@@ -388,7 +471,6 @@ function save(){
   var svg = document.getElementById("svg").innerHTML 
 
   $.get("save",{svg:svg,game_id:game_id},function(data){
-    console.log(data)
   })
   ////////////////////////////////////
   // Modificar HTML para mostrar mensaje que se guardó el juego de forma exitosa

@@ -116,15 +116,22 @@ def get_move(text):
     uci = text
     global board
     legal_moves_uci =[move.uci() for move in board.legal_moves ]
+
     if uci in legal_moves_uci:
         return uci
-    else:
-        return "Movimiento invalido"
+
+    for lmu in legal_moves_uci:
+        print(lmu)
+        if lmu.find(uci)>-1 and len(lmu)>4 :
+            return "Promoción"
+
+    return "Movimiento invalido"
 
 def jugador_humano(board, color, depth):
     #display(board)
     uci = get_move("%s's move [q to quit]> " % who(board.turn))
     legal_uci_moves = [move.uci() for move in board.legal_moves]
+
     while uci not in legal_uci_moves:
         print("Legal moves: " + (",".join(sorted(legal_uci_moves))))
         uci = get_move("%s's move[q to quit]> " % who(board.turn))
