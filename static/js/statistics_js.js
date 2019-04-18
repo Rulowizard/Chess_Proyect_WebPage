@@ -3,6 +3,7 @@
 min_val=1
 max_val=633
 var bar_datos;
+var hist_datos;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -41,6 +42,14 @@ function selectM4(data){
 
 function selectM5(data){
     return data.playerplays_type == "M5"
+}
+
+function selectM6(data){
+    return data.playerplays_type == "M6"
+}
+
+function selectH(data){
+    return data.playerplays_type == "H"
 }
 
 function selectMinTurn(data){
@@ -100,7 +109,19 @@ function drawBarWinner(data=bar_datos){
                 name:"M5",
                 type:"bar"
             };
-            info_arr=[t1,t2,t3,t4,t5];
+            var t6 ={
+                y: data[5][1],
+                x: data[5][0],
+                name:"M6",
+                type:"bar"
+            };
+            var t7 ={
+                y: data[6][1],
+                x: data[6][0],
+                name:"H",
+                type:"bar"
+            };
+            info_arr=[t1,t2,t3,t4,t5,t6,t7];
             var layout = {barmode:"stack"};
             Plotly.newPlot("img-2",info_arr,layout)
         break;
@@ -154,14 +175,33 @@ function drawBarWinner(data=bar_datos){
             info_arr=[t];
             Plotly.newPlot("img-2",info_arr)
         break;
+
+        case "Machine 6":
+            var t ={
+                y: data[5][1],
+                x: data[5][0],
+                type:"bar"
+            };
+            info_arr=[t];
+            Plotly.newPlot("img-2",info_arr)
+        break;
+
+        case "Humano":
+            var t ={
+                y: data[6][1],
+                x: data[6][0],
+                type:"bar"
+            };
+            info_arr=[t];
+            Plotly.newPlot("img-2",info_arr)
+        break;
     }
 }
 
 
 
-function drawHistogramPosEvaluated(data=datos){
-    console.log("hOLA")
-    drawBarWinner()
+function drawHistogramPosEvaluated(data=hist_datos){
+    
     var valor = getSelDepth()
     var player = getSelPlayer()
 
@@ -201,6 +241,12 @@ function drawHistogramPosEvaluated(data=datos){
         case "Machine 5":
             filtered_data = filtered_data.filter(selectM5);
             break;
+        case "Machine 6":
+            filtered_data = filtered_data.filter(selectM6);
+            break;
+        case "Humano":
+            filtered_data = filtered_data.filter(selectH);
+            break;
     }
 
     //Filtrar por turno
@@ -215,36 +261,44 @@ function drawHistogramPosEvaluated(data=datos){
     //Dibujar histograma
     var hist_info = [hist_mov_len];
     Plotly.newPlot("img", hist_info)
+
+    drawBarWinner(bar_datos)
     
 }
 
 function slider(data){
     min_val = data[0]
     max_val = data[1]
-    drawHistogramPosEvaluated()
+    drawHistogramPosEvaluated(hist_datos)
 }
 
 function init(){
-    $.get("mysql", function(data){
-        datos = data
-        drawHistogramPosEvaluated(data)
-        
-    });
 
     $.get("bars", {min:1,max:633,depth:getSelDepth(),player:getSelPlayer()} , function(data){
         bar_datos= data
         drawBarWinner(bar_datos)
     });
 
+    $.get("mysql", function(data){
+        console.log("Data de mysql:")
+        console.log(data)
+        hist_datos = data
+        drawHistogramPosEvaluated(hist_datos)
+    });
+
 }
 
 
+d3.select("#selDepth").on("change", function(){
+    drawHistogramPosEvaluated();
+    drawBarWinner();
+} );
 
-d3.select("#selDepth").on("change", drawHistogramPosEvaluated );
-d3.select("#selPlayer").on("change", drawHistogramPosEvaluated )
+d3.select("#selPlayer").on("change", function(){
+    drawHistogramPosEvaluated();
+    drawBarWinner();
+} );
 
-//test();
+
 init();
 
-
-//drawBarWinner

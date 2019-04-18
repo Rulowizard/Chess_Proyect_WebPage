@@ -135,8 +135,11 @@ function serverSelPlayer(selValue){
     case "Humano":
       player="Humano"
       break;
-    default:
+    case "Maquina 5":
       player="M5"
+      break;
+    default:
+      player="M6"
   }
   return player;
 

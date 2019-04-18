@@ -1129,7 +1129,6 @@ def analisis_v5(board,move,player_color, original_player_color):
     
 
 
-
 def minimax ( depth , board , alpha , beta , is_maximizing, move, color_jugador ):
     global mov_len
     if ( depth==0 ):

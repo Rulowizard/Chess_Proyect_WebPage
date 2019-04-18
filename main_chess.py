@@ -167,9 +167,10 @@ def save():
 @app.route("/mysql",methods=["GET"])
 def mySQL():
     #Me conecto con la BD de MySQL
+    print("Entro mysql")
     conn = engine.connect()
-    plays_df = pd.read_sql("Select * FROM plays",conn)
-    plays_df = plays_df.drop( ["id","x_axis","y_axis"] , axis=1)
+    plays_df = pd.read_sql("Select id,mov_len, playerplays_type,depth,game_len,winner FROM plays",conn)
+    plays_df = plays_df.drop( ["id"] , axis=1)
     plays_dict = plays_df.to_dict("records")
     return jsonify(plays_dict)
 
@@ -235,15 +236,22 @@ def bars():
     info5=[labels5,values5]
 
 
-    machine_str=""
+    machine_str="and playerplays_type = 'M6' "
     str6= limit_turn + depth_str + machine_str
     df6= pd.read_sql( q1+q2+str6+q4, conn )
     labels6= list(df6["end_game_mode"])
     values6 = list( df6["count(playerplays_type)"] )
     info6=[labels6,values6]
 
+    machine_str="and playerplays_type = 'H' "
+    str7= limit_turn + depth_str + machine_str
+    df7= pd.read_sql( q1+q2+str7+q4, conn )
+    labels7= list(df7["end_game_mode"])
+    values7 = list( df7["count(playerplays_type)"] )
+    info7=[labels7,values7]
+
     
-    return jsonify( [info1,info2,info3,info4,info5,info6]  )
+    return jsonify( [info1,info2,info3,info4,info5,info6,info7]  )
 
 
 
