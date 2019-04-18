@@ -14,7 +14,8 @@ engine = create_engine ("mysql://root:Aa1$0110m@localhost/chess_db")
 
 from chess_engine import ( boardSVGRepr, initialize_game, 
     call_jugador_v4, global_board, global_turn, process_play, jugador_v1, jugador_v2,
-    jugador_v3, jugador_v4, jugador_v5, get_move, fen_representation, initialize_game_fen)
+    jugador_v3, jugador_v4, jugador_v5, get_move, fen_representation, initialize_game_fen,
+    jugador_v6)
 
 
 # Create an instance of Flask
@@ -336,6 +337,9 @@ def player():
     elif player =="M5":
         print("M5")
         values =  process_play( jugador_v5(board,color,depth) , "M5", depth , game_id  )
+    elif player == "M6":
+        print("M6")
+        values = process_play( jugador_v6(board,color,depth)  ,"M6", depth , game_id )
     return jsonify(values)
 
 
