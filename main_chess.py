@@ -174,6 +174,28 @@ def mySQL():
     plays_dict = plays_df.to_dict("records")
     return jsonify(plays_dict)
 
+@app.route("/heat_map", methods=["GET"])
+def heat_map():
+    conn = engine.connect()
+    df = pd.read_sql("Select game_len, x_dest,y_dest,playerplays_type,depth FROM plays", conn)
+    df_dict = df.to_dict("records")
+    return jsonify(df_dict)
+
+@app.route("/box_time", methods=["GET"])
+def box_time():
+    conn = engine.connect()
+    df = pd.read_sql("Select game_len,playerplays_type,depth,exec_time FROM plays where exec_time<>'' ", conn)
+    df_dict = df.to_dict("records")
+    return jsonify(df_dict)
+
+@app.route("/box_len", methods=["GET"])
+def box_len():
+    conn = engine.connect()
+    df = pd.read_sql("Select game_len,playerplays_type,depth,mov_len FROM plays ", conn)
+    df_dict = df.to_dict("records")
+    return jsonify(df_dict)
+
+
 @app.route("/bars",methods=["GET"])
 def bars():
     conn = engine.connect()

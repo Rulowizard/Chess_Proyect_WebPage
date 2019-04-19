@@ -37,7 +37,7 @@ Select sum(mov_len) from plays;
 -- ALTER TABLE plays ADD COLUMN score decimal(7,3) AFTER exec_time;
 -- ALTER TABLE plays CHANGE score score decimal(9,3);
 -- ALTER TABLE plays DROP COLUMN exec_time;
--- ALTER TABLE plays CHANGE exec_time exec_time decimal(6,6);
+-- ALTER TABLE plays CHANGE exec_time exec_time decimal(9,5);
 -- ALTER TABLE plays CHANGE y_axis y_dest int;
 
 Select mov_len from plays order by mov_len desc;

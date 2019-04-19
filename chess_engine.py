@@ -1359,7 +1359,7 @@ def process_play(info,player_type,depth, game_id):
     #Inserto información en la BD de MySQL
     query = "insert into plays values (id,"+str(game_id)+","+str(mov_len)+","  \
         + str(end_game) +","+ str(game_len)+","+str(coordinates[0])+","+str(coordinates[1])+","+"'"    \
-        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg +"',"+ str(round(exec_time,6))  \
+        +str(player_type)+"',"+str(depth)+",'"+result+"','"+ msg +"',"+ str(round(exec_time,5))  \
         +","+str(score) +");"
     engine.execute(query)
 
